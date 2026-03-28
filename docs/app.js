@@ -1,54 +1,15 @@
 // =================================================================
-// GITHUB ORG STATS DASHBOARD
+// GITHUB ORG STATS DASHBOARD - PUBLIC VERSION
 // =================================================================
+// This version uses a secure backend proxy (Vercel)
+// No token required from users - dashboard is fully public!
 
-// === CONFIG (secure - token entered at runtime) ===
-// Token is NOT stored in code - user enters it when first loading the page
-// Credentials are saved in browser localStorage for convenience
-
-function getConfig() {
-    let org = localStorage.getItem('github_org');
-    let token = localStorage.getItem('github_token');
-    
-    // If not set, prompt user
-    if (!org || !token) {
-        org = prompt('Enter GitHub Organization name (e.g., facebook, google):');
-        token = prompt('Enter your GitHub Personal Access Token:');
-        
-        if (org && token) {
-            localStorage.setItem('github_org', org);
-            localStorage.setItem('github_token', token);
-        }
-    }
-    
-    return { org, token };
-}
-
-// Get config at runtime
-const config = getConfig();
-const ORG = config.org;
-const TOKEN = config.token;
-
-// Exit if no credentials provided
-if (!ORG || !TOKEN) {
-    document.body.innerHTML = `
-        <div style="padding: 40px; text-align: center; color: #e6edf3; background: #0d1117; min-height: 100vh;">
-            <h1>GitHub Dashboard</h1>
-            <p style="color: #8b949e; margin: 20px 0;">Credentials required to access GitHub API.</p>
-            <button onclick="location.reload()" style="padding: 10px 20px; background: #238636; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px;">
-                Enter Credentials
-            </button>
-            <br><br>
-            <button onclick="localStorage.clear(); location.reload();" style="padding: 10px 20px; background: #30363d; color: #e6edf3; border: 1px solid #30363d; border-radius: 6px; cursor: pointer; font-size: 14px;">
-                Clear Saved Credentials
-            </button>
-        </div>
-    `;
-    throw new Error('No credentials provided');
-}
+// === CONFIG ===
+const ORG = 'VacoBinarySemanticsLLP';
 
 // === CONSTANTS ===
-const API_BASE = 'https://api.github.com';
+// Use Vercel API proxy (token hidden on server)
+const API_BASE = '/api/github';
 const WEEKS_TO_SHOW = 12;
 const HEATMAP_WEEKS = 26;
 const TOP_REPOS_COUNT = 5;
@@ -82,31 +43,26 @@ const LANG_COLORS = {
 // =================================================================
 
 async function ghFetch(path) {
-    const url = `${API_BASE}${path}`;
-    const headers = {
-        'Authorization': `Bearer ${TOKEN}`,
-        'Accept': 'application/vnd.github.v3+json'
-    };
-
-    const response = await fetch(url, { headers });
+    // Encode path for URL
+    const encodedPath = encodeURIComponent(path);
+    const url = `${API_BASE}?path=${encodedPath}`;
+    
+    const response = await fetch(url);
 
     if (!response.ok) {
-        throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.error || `API error: ${response.status}`);
     }
 
-    // Parse Link header for pagination info
-    const linkHeader = response.headers.get('Link');
-    let totalCount = null;
-
-    if (linkHeader && path.includes('members')) {
-        const match = linkHeader.match(/page=(\d+)>; rel="last"/);
-        if (match) {
-            totalCount = parseInt(match[1], 10);
-        }
-    }
+    // Get member count from header if available
+    const memberCount = response.headers.get('x-github-member-count');
 
     const data = await response.json();
-    return { data, totalCount, headers: response.headers };
+    return { 
+        data, 
+        totalCount: memberCount ? parseInt(memberCount, 10) : null,
+        headers: response.headers 
+    };
 }
 
 // =================================================================
@@ -119,8 +75,13 @@ async function fetchRepos() {
 }
 
 async function fetchMembers() {
-    const { totalCount } = await ghFetch(`/orgs/${ORG}/members?per_page=1`);
-    return totalCount || 0;
+    // Use org endpoint to get public repos count
+    try {
+        const { data } = await ghFetch(`/orgs/${ORG}`);
+        return data.public_repos || 0;
+    } catch {
+        return 0;
+    }
 }
 
 async function fetchContributors(repos) {
@@ -176,7 +137,7 @@ async function fetchOpenPRs(repos) {
     for (const repo of repos.slice(0, TOP_REPOS_COUNT)) {
         try {
             const { data } = await ghFetch(`/repos/${ORG}/${repo.name}/pulls?state=open&per_page=1`);
-            totalOpen += data.length;
+            totalOpen += Array.isArray(data) ? data.length : 0;
         } catch (e) {
             console.warn(`Failed to fetch PRs for ${repo.name}:`, e);
         }
@@ -192,8 +153,10 @@ async function fetchLanguages(repos) {
         try {
             const { data } = await ghFetch(`/repos/${ORG}/${repo.name}/languages`);
 
-            for (const [lang, bytes] of Object.entries(data)) {
-                langBytes[lang] = (langBytes[lang] || 0) + bytes;
+            if (data && typeof data === 'object') {
+                for (const [lang, bytes] of Object.entries(data)) {
+                    langBytes[lang] = (langBytes[lang] || 0) + bytes;
+                }
             }
         } catch (e) {
             console.warn(`Failed to fetch languages for ${repo.name}:`, e);
@@ -210,10 +173,12 @@ async function fetchCommitsForHeatmap(repos) {
         try {
             const { data } = await ghFetch(`/repos/${ORG}/${repo.name}/commits?per_page=100`);
 
-            for (const commit of data) {
-                if (commit.commit && commit.commit.author && commit.commit.author.date) {
-                    const date = commit.commit.author.date.split('T')[0];
-                    commitCounts[date] = (commitCounts[date] || 0) + 1;
+            if (Array.isArray(data)) {
+                for (const commit of data) {
+                    if (commit.commit && commit.commit.author && commit.commit.author.date) {
+                        const date = commit.commit.author.date.split('T')[0];
+                        commitCounts[date] = (commitCounts[date] || 0) + 1;
+                    }
                 }
             }
         } catch (e) {
@@ -236,6 +201,8 @@ function aggregateContributors(rawData) {
 
 function aggregateLanguages(langBytes) {
     const total = Object.values(langBytes).reduce((sum, bytes) => sum + bytes, 0);
+    if (total === 0) return [];
+
     const sorted = Object.entries(langBytes)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 6);
@@ -275,19 +242,27 @@ function sumCommits(contributors) {
 // RENDERERS
 // =================================================================
 
-function renderOrgInfo(repos, members) {
-    // Use first repo's owner as org info
-    const firstRepo = repos[0];
-    if (firstRepo && firstRepo.owner) {
-        document.getElementById('org-avatar').src = firstRepo.owner.avatar_url;
-        document.getElementById('org-name').textContent = firstRepo.owner.login;
-        document.getElementById('org-handle').textContent = `@${firstRepo.owner.login}`;
+function renderOrgInfo(repos, orgData) {
+    if (orgData) {
+        document.getElementById('org-avatar').src = orgData.avatar_url || '';
+        document.getElementById('org-name').textContent = orgData.login || ORG;
+        document.getElementById('org-handle').textContent = `@${orgData.login || ORG}`;
+    } else if (repos[0] && repos[0].owner) {
+        document.getElementById('org-avatar').src = repos[0].owner.avatar_url;
+        document.getElementById('org-name').textContent = repos[0].owner.login;
+        document.getElementById('org-handle').textContent = `@${repos[0].owner.login}`;
     }
 
     // Badges
-    document.getElementById('badge-members').textContent = members.toLocaleString();
-    document.getElementById('badge-repos').textContent = repos.length.toLocaleString();
-    document.getElementById('badge-active').textContent = Math.floor(members * 0.3).toLocaleString();
+    if (orgData) {
+        document.getElementById('badge-members').textContent = 'Public';
+        document.getElementById('badge-repos').textContent = (orgData.public_repos || repos.length).toLocaleString();
+        document.getElementById('badge-active').textContent = Math.floor((orgData.public_repos || repos.length) * 0.3).toLocaleString();
+    } else {
+        document.getElementById('badge-members').textContent = '-';
+        document.getElementById('badge-repos').textContent = repos.length.toLocaleString();
+        document.getElementById('badge-active').textContent = Math.floor(repos.length * 0.3).toLocaleString();
+    }
 }
 
 function renderMetrics({ commits, devs, prs, mergeTime }) {
@@ -309,13 +284,10 @@ function renderWeekChart(weeks) {
         const height = (total / maxValue) * 100;
         bar.style.height = `${height}%`;
 
-        // Tooltip handlers
         bar.addEventListener('mouseenter', (e) => {
             showTooltip(e, `Week ${index + 1}: ${total.toLocaleString()} commits`);
         });
-        bar.addEventListener('mousemove', (e) => {
-            updateTooltipPosition(e);
-        });
+        bar.addEventListener('mousemove', updateTooltipPosition);
         bar.addEventListener('mouseleave', hideTooltip);
 
         container.appendChild(bar);
@@ -325,6 +297,11 @@ function renderWeekChart(weeks) {
 function renderContributors(list) {
     const container = document.getElementById('contributors-list');
     container.innerHTML = '';
+
+    if (list.length === 0) {
+        container.innerHTML = '<div style="color: #8b949e; padding: 20px; text-align: center;">No contributor data available</div>';
+        return;
+    }
 
     const maxCommits = list[0]?.contributions || 1;
 
@@ -359,6 +336,11 @@ function renderContributors(list) {
 function renderRepos(list) {
     const container = document.getElementById('repo-list');
     container.innerHTML = '';
+
+    if (list.length === 0) {
+        container.innerHTML = '<div style="color: #8b949e; padding: 20px; text-align: center;">No repository data available</div>';
+        return;
+    }
 
     list.forEach(repo => {
         const item = document.createElement('div');
@@ -415,9 +397,6 @@ function renderHeatmap(commitCounts = null) {
                 else if (count >= 10) intensity = 3;
                 else if (count >= 4) intensity = 2;
                 else if (count >= 1) intensity = 1;
-            } else {
-                // Random for demo
-                intensity = Math.floor(Math.random() * 5);
             }
 
             cell.className = `heatmap-cell hm-${intensity}`;
@@ -425,7 +404,7 @@ function renderHeatmap(commitCounts = null) {
             cell.dataset.count = commitCounts?.[dateStr] || 0;
 
             cell.addEventListener('mouseenter', (e) => {
-                const count = commitCounts?.[dateStr] || Math.floor(Math.random() * 15);
+                const count = commitCounts?.[dateStr] || 0;
                 showTooltip(e, `${dateStr}\n${count} contribution${count !== 1 ? 's' : ''}`);
             });
             cell.addEventListener('mousemove', updateTooltipPosition);
@@ -442,6 +421,11 @@ function renderLanguages(langs) {
 
     barContainer.innerHTML = '';
     legendContainer.innerHTML = '';
+
+    if (langs.length === 0) {
+        barContainer.innerHTML = '<div style="color: #8b949e; padding: 20px; text-align: center; width: 100%;">No language data available</div>';
+        return;
+    }
 
     langs.forEach(lang => {
         // Bar segment
@@ -477,7 +461,7 @@ function renderFeed(items, filter = 'all') {
     const filtered = filter === 'all' ? items : items.filter(item => item.type === filter);
 
     if (filtered.length === 0) {
-        container.innerHTML = '<div class="activity-empty">No activity to display</div>';
+        container.innerHTML = '<div class="activity-empty" style="color: #8b949e; padding: 20px; text-align: center;">No activity to display</div>';
         return;
     }
 
@@ -535,7 +519,6 @@ function renderHealth(data) {
             bar.style.width = `${value}%`;
             bar.parentElement.nextElementSibling.textContent = `${value}%`;
 
-            // Update color based on value
             bar.className = 'health-bar';
             if (value >= 80) bar.classList.add('health-bar-good');
             else if (value >= 60) bar.classList.add('health-bar-warning');
@@ -566,7 +549,6 @@ function updateTooltipPosition(event) {
     let x = event.clientX + padding;
     let y = event.clientY + padding;
 
-    // Keep tooltip in viewport
     const rect = tooltip.getBoundingClientRect();
     if (x + rect.width > window.innerWidth) {
         x = event.clientX - rect.width - padding;
@@ -591,8 +573,6 @@ function animateCount(element, target, duration = 1000) {
     function update(currentTime) {
         const elapsed = currentTime - startTime;
         const progress = Math.min(elapsed / duration, 1);
-
-        // Ease out cubic
         const easeProgress = 1 - Math.pow(1 - progress, 3);
         const current = Math.floor(start + (target - start) * easeProgress);
 
@@ -607,24 +587,20 @@ function animateCount(element, target, duration = 1000) {
 }
 
 function switchTab(tabName) {
-    // Update tab buttons
     document.querySelectorAll('.tab').forEach(tab => {
         tab.classList.toggle('active', tab.dataset.tab === tabName);
     });
 
-    // Update panels
     document.querySelectorAll('.tab-panel').forEach(panel => {
         panel.classList.toggle('active', panel.id === `tab-${tabName}`);
     });
 }
 
 function filterFeed(type, element) {
-    // Update chips
     document.querySelectorAll('.chip').forEach(chip => {
         chip.classList.toggle('active', chip === element);
     });
 
-    // Re-render feed with filter
     if (window.lastFeedItems) {
         renderFeed(window.lastFeedItems, type);
     }
@@ -653,7 +629,7 @@ function clearError() {
 }
 
 // =================================================================
-// MOCK DATA (for demo purposes)
+// MOCK DATA (for activity feed)
 // =================================================================
 
 function generateMockFeed() {
@@ -699,14 +675,14 @@ async function init() {
     clearError();
 
     try {
-        // Fetch repos and members in parallel
-        const [repos, members] = await Promise.all([
+        // Fetch repos and org info in parallel
+        const [repos, orgData] = await Promise.all([
             fetchRepos(),
-            fetchMembers()
+            ghFetch(`/orgs/${ORG}`).then(r => r.data).catch(() => null)
         ]);
 
         if (!repos || repos.length === 0) {
-            throw new Error('No repositories found. Check your ORG name.');
+            throw new Error('No repositories found. Check organization name.');
         }
 
         const top5 = repos.slice(0, TOP_REPOS_COUNT);
@@ -723,10 +699,10 @@ async function init() {
         hideSkeleton();
 
         // Render all sections
-        renderOrgInfo(repos, members);
+        renderOrgInfo(repos, orgData);
         renderMetrics({
             commits: sumCommits(contributors),
-            devs: members,
+            devs: orgData?.public_repos || repos.length,
             prs: prs,
             mergeTime: calcMergeTime(repos)
         });
@@ -736,7 +712,7 @@ async function init() {
         renderHeatmap(commitCounts);
         renderLanguages(aggregateLanguages(langs));
 
-        // Mock data for demo
+        // Mock data for activity feed
         window.lastFeedItems = generateMockFeed();
         renderFeed(window.lastFeedItems, 'all');
         renderPRStats({ merged: 62, open: 23, closed: 15 });
@@ -770,16 +746,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Retry button
     document.getElementById('retry-btn').addEventListener('click', init);
-
-    // Clear credentials button
-    const clearBtn = document.getElementById('clear-credentials');
-    if (clearBtn) {
-        clearBtn.addEventListener('click', () => {
-            localStorage.removeItem('github_org');
-            localStorage.removeItem('github_token');
-            location.reload();
-        });
-    }
 
     // Initialize dashboard
     init();
