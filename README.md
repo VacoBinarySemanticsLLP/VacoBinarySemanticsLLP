@@ -2,6 +2,14 @@
 
 **Empowering Digital Transformation with Expertise, Technology, and Trust**
 
+---
+
+## 📊 [View Live GitHub Dashboard](https://vacobinarysemanticsllp.github.io/VacoBinarySemanticsLLP/)
+
+*[Real-time organization statistics and metrics](https://vacobinarysemanticsllp.github.io/VacoBinarySemanticsLLP/)*
+
+---
+
 Vaco Binary Semantics LLP offers **end-to-end Managed Services, Consulting, and Talent Solutions** to organizations across the globe. With **150+ locations across India**, we deliver flexible, scalable, and customized support to meet the evolving needs of businesses in multiple industries.
 
 ---
