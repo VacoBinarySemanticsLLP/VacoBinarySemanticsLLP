@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Org Stats Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="shell">
+        <!-- Loading Skeleton -->
+        <div id="skeleton" class="skeleton">
+            <div class="skeleton-topbar"></div>
+            <div class="skeleton-metrics"></div>
+            <div class="skeleton-chart"></div>
+            <div class="skeleton-two-col"></div>
+        </div>
+
+        <!-- Error Banner -->
+        <div id="error-banner" class="error-banner hidden">
+            <div class="error-content">
+                <span class="error-icon">⚠️</span>
+                <span id="error-message">Failed to load data</span>
+                <button id="retry-btn" class="retry-btn">Retry</button>
+            </div>
+        </div>
+
+        <!-- Main Dashboard (hidden until loaded) -->
+        <div id="dashboard" class="dashboard hidden">
+            <!-- Top Bar -->
+            <header class="topbar">
+                <div class="org-info">
+                    <img id="org-avatar" class="org-avatar" src="" alt="Organization Avatar">
+                    <div class="org-details">
+                        <h1 id="org-name" class="org-name">Loading...</h1>
+                        <span id="org-handle" class="org-handle">@loading</span>
+                    </div>
+                </div>
+                <div class="badges">
+                    <div class="badge" title="Active Members">
+                        <span class="badge-icon">👥</span>
+                        <span id="badge-members" class="badge-value">-</span>
+                        <span class="badge-label">members</span>
+                    </div>
+                    <div class="badge" title="Public Repositories">
+                        <span class="badge-icon">📦</span>
+                        <span id="badge-repos" class="badge-value">-</span>
+                        <span class="badge-label">repos</span>
+                    </div>
+                    <div class="badge" title="Active Today">
+                        <span class="badge-icon">🔥</span>
+                        <span id="badge-active" class="badge-value">-</span>
+                        <span class="badge-label">active</span>
+                    </div>
+                    <button id="clear-credentials" class="badge" title="Clear saved credentials" style="cursor: pointer; border: none;">
+                        <span class="badge-icon">🚪</span>
+                        <span class="badge-label">Logout</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Metric Cards -->
+            <section class="metrics-grid">
+                <div class="metric-card" id="total-commits">
+                    <div class="metric-header">
+                        <span class="metric-icon commits-icon">📊</span>
+                        <span class="metric-trend" id="commits-trend">+12%</span>
+                    </div>
+                    <div class="metric-value" id="commits-value">0</div>
+                    <div class="metric-label">Total Commits</div>
+                    <div class="metric-sublabel">Last 4 weeks</div>
+                </div>
+                <div class="metric-card" id="active-devs">
+                    <div class="metric-header">
+                        <span class="metric-icon devs-icon">👨‍💻</span>
+                        <span class="metric-trend" id="devs-trend">+5%</span>
+                    </div>
+                    <div class="metric-value" id="devs-value">0</div>
+                    <div class="metric-label">Active Developers</div>
+                    <div class="metric-sublabel">Contributing this month</div>
+                </div>
+                <div class="metric-card" id="open-prs">
+                    <div class="metric-header">
+                        <span class="metric-icon prs-icon">🔀</span>
+                        <span class="metric-trend" id="prs-trend">+8%</span>
+                    </div>
+                    <div class="metric-value" id="prs-value">0</div>
+                    <div class="metric-label">Open PRs</div>
+                    <div class="metric-sublabel">Awaiting review</div>
+                </div>
+                <div class="metric-card" id="merge-time">
+                    <div class="metric-header">
+                        <span class="metric-icon time-icon">⏱️</span>
+                        <span class="metric-trend trend-down" id="time-trend">-15%</span>
+                    </div>
+                    <div class="metric-value" id="time-value">0.0</div>
+                    <div class="metric-label">Avg Merge Time</div>
+                    <div class="metric-sublabel">Hours (lower is better)</div>
+                </div>
+            </section>
+
+            <!-- Weekly Commit Chart -->
+            <section class="chart-section">
+                <h2 class="section-title">Weekly Commits (Last 12 Weeks)</h2>
+                <div id="week-chart" class="week-chart">
+                    <!-- Bars generated by JS -->
+                </div>
+                <div class="chart-labels">
+                    <span>12 weeks ago</span>
+                    <span>This week</span>
+                </div>
+            </section>
+
+            <!-- Two Column Row -->
+            <section class="two-col">
+                <!-- Top Contributors -->
+                <div class="panel" id="contributors-panel">
+                    <h2 class="panel-title">Top Contributors</h2>
+                    <div id="contributors-list" class="contributors-list">
+                        <!-- Contributors generated by JS -->
+                    </div>
+                </div>
+
+                <!-- Most Active Repos -->
+                <div class="panel" id="repos-panel">
+                    <h2 class="panel-title">Most Active Repos</h2>
+                    <div id="repo-list" class="repo-list">
+                        <!-- Repos generated by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Contribution Heatmap -->
+            <section class="heatmap-section">
+                <h2 class="section-title">Contribution Activity (Last 26 Weeks)</h2>
+                <div class="heatmap-container">
+                    <div class="heatmap-days">
+                        <span>Mon</span>
+                        <span>Wed</span>
+                        <span>Fri</span>
+                    </div>
+                    <div id="heatmap" class="heatmap">
+                        <!-- Heatmap cells generated by JS -->
+                    </div>
+                    <div class="heatmap-legend">
+                        <span class="legend-label">Less</span>
+                        <div class="heatmap-cell hm-0"></div>
+                        <div class="heatmap-cell hm-1"></div>
+                        <div class="heatmap-cell hm-2"></div>
+                        <div class="heatmap-cell hm-3"></div>
+                        <div class="heatmap-cell hm-4"></div>
+                        <span class="legend-label">More</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Language Breakdown -->
+            <section class="lang-section">
+                <h2 class="section-title">Language Breakdown</h2>
+                <div id="lang-bar" class="lang-bar">
+                    <!-- Language segments generated by JS -->
+                </div>
+                <div id="lang-legend" class="lang-legend">
+                    <!-- Legend items generated by JS -->
+                </div>
+            </section>
+
+            <!-- Tabbed Panel -->
+            <section class="tabs-section">
+                <div class="tabs-strip">
+                    <button class="tab active" data-tab="activity">Activity Feed</button>
+                    <button class="tab" data-tab="prs">PR Stats</button>
+                    <button class="tab" data-tab="health">Repo Health</button>
+                </div>
+
+                <!-- Tab 1: Activity Feed -->
+                <div id="tab-activity" class="tab-panel active">
+                    <div class="filter-chips">
+                        <button class="chip active" data-filter="all">All</button>
+                        <button class="chip" data-filter="commits">Commits</button>
+                        <button class="chip" data-filter="prs">PRs</button>
+                        <button class="chip" data-filter="issues">Issues</button>
+                        <button class="chip" data-filter="releases">Releases</button>
+                    </div>
+                    <div id="activity-feed" class="activity-feed">
+                        <!-- Activity items generated by JS -->
+                    </div>
+                </div>
+
+                <!-- Tab 2: PR Stats -->
+                <div id="tab-prs" class="tab-panel">
+                    <div class="pr-stats">
+                        <div class="pr-status-bar">
+                            <div class="pr-status pr-merged" style="width: 62%;">
+                                <span>Merged 62%</span>
+                            </div>
+                            <div class="pr-status pr-open" style="width: 23%;">
+                                <span>Open 23%</span>
+                            </div>
+                            <div class="pr-status pr-closed" style="width: 15%;">
+                                <span>Closed 15%</span>
+                            </div>
+                        </div>
+                        <div class="pr-metrics">
+                            <div class="pr-metric">
+                                <span class="pr-metric-label">Total PRs this month</span>
+                                <span class="pr-metric-value" id="pr-total">0</span>
+                            </div>
+                            <div class="pr-metric">
+                                <span class="pr-metric-label">Avg time to merge</span>
+                                <span class="pr-metric-value" id="pr-avg-time">0h</span>
+                            </div>
+                            <div class="pr-metric">
+                                <span class="pr-metric-label">Review comments avg</span>
+                                <span class="pr-metric-value" id="pr-comments">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Repo Health -->
+                <div id="tab-health" class="tab-panel">
+                    <div class="health-scores">
+                        <div class="health-row">
+                            <span class="health-label">Test Coverage</span>
+                            <div class="health-bar-container">
+                                <div class="health-bar" id="health-coverage" style="width: 78%;"></div>
+                            </div>
+                            <span class="health-value">78%</span>
+                        </div>
+                        <div class="health-row">
+                            <span class="health-label">CI Success Rate</span>
+                            <div class="health-bar-container">
+                                <div class="health-bar health-bar-good" id="health-ci" style="width: 94%;"></div>
+                            </div>
+                            <span class="health-value">94%</span>
+                        </div>
+                        <div class="health-row">
+                            <span class="health-label">Code Review Rate</span>
+                            <div class="health-bar-container">
+                                <div class="health-bar health-bar-good" id="health-review" style="width: 91%;"></div>
+                            </div>
+                            <span class="health-value">91%</span>
+                        </div>
+                        <div class="health-row">
+                            <span class="health-label">Documentation</span>
+                            <div class="health-bar-container">
+                                <div class="health-bar health-bar-warning" id="health-docs" style="width: 62%;"></div>
+                            </div>
+                            <span class="health-value">62%</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Tooltip -->
+        <div id="tooltip" class="tooltip"></div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
