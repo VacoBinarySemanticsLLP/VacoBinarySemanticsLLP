@@ -1,152 +1,82 @@
 # AGENTS.md
 
 ## Repository Overview
-GitHub Organization Stats Dashboard — a live, dynamic dashboard that calls GitHub REST API v3 and renders real data.
-
-**Tech Stack**: Vanilla JS + HTML + CSS (no framework, no build step)
+GitHub organization profile README for **Vaco Binary Semantics LLP**.
+This repo contains the README.md that displays on the organization's GitHub page.
 
 ## File Structure
 ```
-├── index.html       # Full dashboard layout
-├── style.css        # Dark GitHub-style theme
-├── app.js           # All API + render logic
-├── .gitignore
-└── AGENTS.md
+├── README.md       # Organization profile README (main file)
+└── AGENTS.md       # This file - instructions for AI agents
 ```
 
-## Design System
-**Colors (Dark Theme)**
-- Background: `#0d1117`
-- Surface: `#161b22`
-- Border: `#30363d`
-- Text: `#e6edf3`
-- Muted: `#8b949e`
-- Green: `#3fb950` (commits)
-- Blue: `#58a6ff` (PRs, info)
-- Purple: `#a371f7` (merged)
-- Amber: `#e3b341` (warnings)
-- Coral: `#f85149` (issues, errors)
+## About the README
+The README.md uses:
+- **Shields.io badges** for stats and technology icons
+- **Tables** for organized information
+- **GitHub markdown** for formatting
+- **Emoji** for visual appeal
 
-**Typography**
-- Numbers/code: `JetBrains Mono`
-- Labels: `system-ui`
+## How to Update
 
-## Build & Run Commands
-```bash
-# No build step required — works by opening index.html directly
-# For linting (if needed)
-npx eslint *.js
-
-# For formatting
-npx prettier --write *.js *.css *.html
-
-# For testing (if tests are added)
-npx jest  # or npx vitest
+### Adding New Repositories
+Update the "Most Active Repositories" section:
+```markdown
+[![Repo Name](https://gh-card-rd.vercel.app/repo/VacoBinarySemanticsLLP/REPO-NAME/?header=)](https://github.com/VacoBinarySemanticsLLP/REPO-NAME)
 ```
 
-## GitHub API Configuration (Secure)
-```javascript
-// Token is entered at runtime via prompt (NOT hardcoded)
-// Credentials stored in browser localStorage
-// User can clear credentials via Logout button in top bar
+### Adding New Technology Badges
+Add new badges in the "Technologies We Use" section:
+```markdown
+![TechName](https://img.shields.io/badge/-TechName-COLOR?style=flat-square&logo=logo-name&logoColor=white)
 ```
 
-All requests include: `Authorization: Bearer TOKEN` header via `ghFetch()` helper.
+Common logos: https://simpleicons.org
 
-**Security Notes:**
-- Token is entered via browser prompt on first load
-- Credentials saved in localStorage for convenience
-- Logout button clears stored credentials
-- For production: use a backend proxy to hide token
+### Updating Company Info
+- Company details in "Quick Facts" table
+- Specialties in the grid table
+- Locations section
+- Contact information
 
-## Dashboard Sections (Build All)
-1. **Top bar** — org avatar, name, handle, badges (active/repos/members)
-2. **Metric cards (4)** — total commits, active devs, open PRs, avg merge time
-   - Each card: label, animated count-up value, trend delta badge
-3. **Weekly commit bar chart** — 12 bars, hover tooltip, gradient green fill
-4. **Two-column row**:
-   - Left: Top contributors (ranked, avatar, streak, commit bar)
-   - Right: Most active repos (lang dot, stars, commit count)
-5. **Contribution heatmap** — 26 weeks × 7 days, 5 intensity levels, hover tooltip
-6. **Language breakdown** — proportional segmented bar + legend dots
-7. **Tabbed panel (3 tabs)**:
-   - Tab 1: Activity feed (filterable: commits/PRs/issues/releases)
-   - Tab 2: PR stats (status bar, key metrics)
-   - Tab 3: Repo health (bar scores for coverage, CI, docs, review rate)
+## Badge Resources
+- **Shields.io**: https://shields.io
+- **Simple Icons**: https://simpleicons.org
+- **GitHub Cards**: https://gh-card-rd.vercel.app
 
-## GitHub API Endpoints
-```javascript
-GET /orgs/{org}/repos                         → repo list
-GET /repos/{org}/{repo}/contributors          → commit counts per user  
-GET /repos/{org}/{repo}/stats/commit_activity → weekly commit array
-GET /repos/{org}/{repo}/pulls?state=open      → open PR count
-GET /repos/{org}/{repo}/languages             → language bytes map
-GET /orgs/{org}/members?per_page=1            → member count (parse Link header)
-```
+## Style Guidelines
+- Use consistent emoji throughout
+- Keep tables aligned and clean
+- Use shields.io badges for consistency
+- Maintain professional tone
 
-## Code Style Guidelines
+## Common Tasks
 
-### JavaScript
-- **ES6+ syntax**: `const`/`let`, arrow functions, template literals
-- **Descriptive names**: `fetchContributors()`, not `getCont()`
-- **Error handling**: Try/catch around all async operations
-- **DOM manipulation**: Use `querySelector`/`querySelectorAll` with clear selectors
-- **Number formatting**: `toLocaleString()` for counts, `toFixed(1)` for decimals
+### Task 1: Add a new technology
+1. Find the logo at simpleicons.org
+2. Add badge with company brand color
+3. Test rendering on GitHub
 
-### HTML
-- Semantic elements where appropriate
-- IDs must match JavaScript references exactly
-- Accessible attributes (`aria-label`, `role`) for interactive elements
+### Task 2: Update contact info
+1. Edit the Contact Us table
+2. Ensure links are correct
+3. Update social media handles
 
-### CSS
-- CSS variables for design tokens (see design system above)
-- Mobile-first responsive approach
-- Smooth transitions for hover states (200-300ms ease)
-- Box shadows minimal (0-2px offset)
-
-### File Organization
-- Single `app.js` file with sections marked by comments
-- Clear function ordering: config → API → aggregators → renderers → UI helpers → init
-
-## Interaction Requirements
-- ✅ Animated count-up on metric cards on page load
-- ✅ Loading skeleton placeholders while API fetches
-- ✅ Hover tooltips on every chart element and heatmap cell
-- ✅ Filterable activity feed (chips: All / Commits / PRs / Issues / Releases)
-- ✅ Tab switching for bottom panel
-- ✅ All numbers formatted with `toLocaleString()` or `toFixed(1)`
-- ✅ Graceful error state if API fails (banner + retry button)
+### Task 3: Add new repository highlight
+1. Replace REPO-NAME-1 with actual repo name
+2. Verify the repo is public
+3. Check card renders correctly
 
 ## Quality Checklist
-Before declaring complete:
-- [ ] No hardcoded secrets
-- [ ] Authorization header on every `fetch()` call
-- [ ] Every displayed number formatted
-- [ ] Tooltips on all interactive chart/heatmap cells
-- [ ] Error handling on all fetch calls
-- [ ] Works by opening `index.html` directly in browser
+Before committing:
+- [ ] All links work correctly
+- [ ] Tables render properly
+- [ ] Badges display correctly
+- [ ] No typos in company info
+- [ ] Contact details are current
+- [ ] Emoji are appropriate and consistent
 
-## JavaScript Architecture
-Structure `app.js` in this order:
-1. CONFIG (user fills ORG and TOKEN)
-2. API HELPERS (`ghFetch()`)
-3. DATA FETCHERS (one per endpoint)
-4. AGGREGATORS (sort, filter, calculate)
-5. RENDERERS (one per dashboard section)
-6. UI HELPERS (tooltips, animations, tabs)
-7. INIT function
-
-## Common Pitfalls
-- Don't hardcode repository names
-- Don't forget `await` on async calls
-- Don't skip error handling on fetches
-- Don't leave `console.log` statements
-- Don't use relative paths without base URL
-- Don't forget to escape HTML when inserting dynamic content
-
-## Debugging Tips
-- Use browser Network tab to inspect API calls
-- Check console for CORS errors (GitHub API should allow)
-- Verify token has correct scopes (repo, read:org)
-- Test with small `per_page` values first
-- Use `JSON.stringify(data, null, 2)` for logging responses
+## Notes
+- README displays on github.com/VacoBinarySemanticsLLP
+- Some badges may take time to cache/update
+- GitHub limits external image domains - use shields.io and similar trusted services
