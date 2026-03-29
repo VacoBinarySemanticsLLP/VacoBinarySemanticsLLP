@@ -54,9 +54,8 @@ router.get('/contributors', async (req, res) => {
     try {
         const org = getOrg();
 
-        // First get top repos by stars
-        const { data: repos } = await ghFetch(`/orgs/${org}/repos?per_page=20&sort=stars`);
-        const topRepos = repos.slice(0, TOP_REPOS_COUNT);
+        // Fetch up to 100 repositories to capture the entire organization
+        const { data: topRepos } = await ghFetch(`/orgs/${org}/repos?per_page=100&sort=pushed`);
 
         // Fetch contributors for each repo
         const contributorsMap = new Map();
@@ -94,9 +93,7 @@ router.get('/contributors', async (req, res) => {
 // GET /api/commits
 router.get('/commits', async (req, res) => {
     try {
-        const org = getOrg();
-        const { data: repos } = await ghFetch(`/orgs/${org}/repos?per_page=20&sort=stars`);
-        const topRepos = repos.slice(0, TOP_REPOS_COUNT);
+        const { data: topRepos } = await ghFetch(`/orgs/${org}/repos?per_page=100&sort=pushed`);
 
         const weeklyTotals = new Array(52).fill(0);
 
@@ -132,9 +129,7 @@ router.get('/commits', async (req, res) => {
 // GET /api/pulls
 router.get('/pulls', async (req, res) => {
     try {
-        const org = getOrg();
-        const { data: repos } = await ghFetch(`/orgs/${org}/repos?per_page=20&sort=stars`);
-        const topRepos = repos.slice(0, TOP_REPOS_COUNT);
+        const { data: topRepos } = await ghFetch(`/orgs/${org}/repos?per_page=100&sort=pushed`);
 
         let open = 0, merged = 0, closed = 0, totalHours = 0, prCount = 0;
 
@@ -175,9 +170,7 @@ router.get('/pulls', async (req, res) => {
 // GET /api/languages
 router.get('/languages', async (req, res) => {
     try {
-        const org = getOrg();
-        const { data: repos } = await ghFetch(`/orgs/${org}/repos?per_page=20&sort=stars`);
-        const topRepos = repos.slice(0, TOP_REPOS_COUNT);
+        const { data: topRepos } = await ghFetch(`/orgs/${org}/repos?per_page=100&sort=pushed`);
 
         const langBytes = {};
 

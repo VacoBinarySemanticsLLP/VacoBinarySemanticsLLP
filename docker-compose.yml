@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    restart: always
+    env_file: .env
+    ports:
+      - "9007:9007"
+    networks:
+      - default
+      - caddy_network
+    labels:
+      caddy: dashboard.cognitrus.ai
+      caddy.reverse_proxy: "{{upstreams 9007}}"
+
+networks:
+  caddy_network:
+    external: true

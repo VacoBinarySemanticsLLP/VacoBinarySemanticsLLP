@@ -308,8 +308,8 @@ async function init() {
         renderMetrics({
             commits: weeks.reduce((s, w) => s + w.total, 0),
             devs: contributors.length,
-            prs: prs.open,
-            mergeTime: prs.avg_hours.toFixed(1)
+            prs: prs.prs || prs.open || 0,
+            mergeTime: (prs.avg_hours && !isNaN(prs.avg_hours)) ? prs.avg_hours.toFixed(1) : "0.0"
         });
         renderWeekChart(weeks);
         renderContributors(contributors);

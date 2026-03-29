@@ -24,3 +24,6 @@ build/
 
 # Cache
 .cache/
+
+# Agent
+.agent/
