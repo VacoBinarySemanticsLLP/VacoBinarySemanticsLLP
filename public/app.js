@@ -35,17 +35,41 @@ function renderMetrics(data) {
 
 function renderWeekChart(weeks) {
     const container = document.getElementById('week-chart');
+    const yAxis = document.getElementById('y-axis');
     container.innerHTML = '';
+    
     const max = Math.max(...weeks.map(w => w.total), 1);
+    const roundedMax = Math.ceil(max / 100) * 100; // Round up to nearest 100
+    
+    // Update Y-axis labels
+    yAxis.innerHTML = `
+        <span>${roundedMax.toLocaleString()}</span>
+        <span>${Math.round(roundedMax * 0.75).toLocaleString()}</span>
+        <span>${Math.round(roundedMax * 0.5).toLocaleString()}</span>
+        <span>${Math.round(roundedMax * 0.25).toLocaleString()}</span>
+        <span>0</span>
+    `;
 
     weeks.forEach((week, i) => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'week-bar-wrapper';
+        
         const bar = document.createElement('div');
         bar.className = 'week-bar';
         bar.style.height = `${(week.total / max) * 100}%`;
+        bar.setAttribute('data-value', week.total.toLocaleString());
+        bar.setAttribute('role', 'listitem');
+        bar.setAttribute('tabindex', '0');
+        bar.setAttribute('aria-label', `Week ${i + 1}: ${week.total.toLocaleString()} commits`);
+        
         bar.addEventListener('mouseenter', e => showTooltip(e, `Week ${i + 1}: ${week.total.toLocaleString()} commits`));
         bar.addEventListener('mousemove', updateTooltip);
         bar.addEventListener('mouseleave', hideTooltip);
-        container.appendChild(bar);
+        bar.addEventListener('focus', e => showTooltip(e, `Week ${i + 1}: ${week.total.toLocaleString()} commits`));
+        bar.addEventListener('blur', hideTooltip);
+        
+        wrapper.appendChild(bar);
+        container.appendChild(wrapper);
     });
 }
 

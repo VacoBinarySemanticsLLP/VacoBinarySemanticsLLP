@@ -127,10 +127,19 @@
             </section>
 
             <!-- Weekly Commit Chart -->
-            <section class="chart-section glass reveal">
-                <h2 class="section-title">Weekly Commits (Last 12 Weeks)</h2>
-                <div class="chart-container">
-                    <div id="week-chart" class="week-chart"></div>
+            <section class="chart-section glass reveal" aria-labelledby="commits-chart-title">
+                <h2 id="commits-chart-title" class="section-title">Weekly Commits (Last 12 Weeks)</h2>
+                <div class="chart-wrapper">
+                    <div id="y-axis" class="y-axis" aria-hidden="true">
+                        <span>0</span>
+                        <span>25%</span>
+                        <span>50%</span>
+                        <span>75%</span>
+                        <span>100%</span>
+                    </div>
+                    <div class="chart-container">
+                        <div id="week-chart" class="week-chart" role="list" aria-label="Weekly commits data"></div>
+                    </div>
                 </div>
                 <div class="chart-labels">
                     <span>12 weeks ago</span>
