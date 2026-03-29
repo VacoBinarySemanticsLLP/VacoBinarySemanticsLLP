@@ -261,13 +261,13 @@ function switchTab(name) {
 }
 
 function showSkeleton() {
-    document.getElementById('skeleton').classList.remove('hidden');
+    document.getElementById('loader').classList.remove('hidden');
     document.getElementById('dashboard').classList.add('hidden');
     document.getElementById('error-banner').classList.add('hidden');
 }
 
 function hideSkeleton() {
-    document.getElementById('skeleton').classList.add('hidden');
+    document.getElementById('loader').classList.add('hidden');
     document.getElementById('dashboard').classList.remove('hidden');
     
     // Trigger staggered reveal animation
@@ -287,7 +287,7 @@ function hideSkeleton() {
 }
 
 function showError(msg) {
-    document.getElementById('skeleton').classList.add('hidden');
+    document.getElementById('loader').classList.add('hidden');
     document.getElementById('dashboard').classList.add('hidden');
     document.getElementById('error-banner').classList.remove('hidden');
     document.getElementById('error-message').textContent = msg;
@@ -350,7 +350,6 @@ async function init() {
         startCountdown();
     } catch (err) {
         console.error('Dashboard error:', err);
-        hideSkeleton();
         showError(err.message);
     }
 }
