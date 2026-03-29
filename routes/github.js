@@ -93,6 +93,7 @@ router.get('/contributors', async (req, res) => {
 // GET /api/commits
 router.get('/commits', async (req, res) => {
     try {
+        const org = getOrg();
         const { data: topRepos } = await ghFetch(`/orgs/${org}/repos?per_page=100&sort=pushed`);
 
         const weeklyTotals = new Array(52).fill(0);
@@ -129,6 +130,7 @@ router.get('/commits', async (req, res) => {
 // GET /api/pulls
 router.get('/pulls', async (req, res) => {
     try {
+        const org = getOrg();
         const { data: topRepos } = await ghFetch(`/orgs/${org}/repos?per_page=100&sort=pushed`);
 
         let open = 0, merged = 0, closed = 0, totalHours = 0, prCount = 0;
@@ -170,6 +172,7 @@ router.get('/pulls', async (req, res) => {
 // GET /api/languages
 router.get('/languages', async (req, res) => {
     try {
+        const org = getOrg();
         const { data: topRepos } = await ghFetch(`/orgs/${org}/repos?per_page=100&sort=pushed`);
 
         const langBytes = {};

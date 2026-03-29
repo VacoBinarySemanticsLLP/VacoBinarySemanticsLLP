@@ -53,7 +53,7 @@ function renderContributors(list) {
     const container = document.getElementById('contributors-list');
     container.innerHTML = '';
     if (!list.length) {
-        container.innerHTML = '<div style="color: var(--text2); padding: 20px; text-align: center;">No data</div>';
+        container.innerHTML = '<div style="color: var(--text-muted); padding: 20px; text-align: center;">No data</div>';
         return;
     }
     const max = list[0].contributions;
@@ -65,7 +65,9 @@ function renderContributors(list) {
             <img class="contributor-avatar" src="${c.avatar_url}" alt="${c.login}">
             <div class="contributor-info">
                 <div class="contributor-name">${c.login}</div>
-                <div class="contributor-stats">${c.contributions.toLocaleString()} commits</div>
+                <div class="contributor-stats">
+                    ${c.contributions.toLocaleString()} commits
+                </div>
             </div>
             <div class="commit-bar-container">
                 <div class="commit-bar" style="width: ${(c.contributions / max) * 100}%"></div>
@@ -82,20 +84,22 @@ function renderRepos(list) {
     const container = document.getElementById('repo-list');
     container.innerHTML = '';
     if (!list.length) {
-        container.innerHTML = '<div style="color: var(--text2); padding: 20px; text-align: center;">No data</div>';
+        container.innerHTML = '<div style="color: var(--text-muted); padding: 20px; text-align: center;">No data</div>';
         return;
     }
     list.forEach(repo => {
         const item = document.createElement('div');
         item.className = 'repo-item';
         item.innerHTML = `
-            <div class="lang-dot" style="background: ${LANG_COLORS[repo.language] || LANG_COLORS.default}"></div>
+            <div class="repo-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15a2 2 0 0 1 1 1.73v5.85a2 2 0 0 1-1 1.73l-9 5.15a2 2 0 0 1-2 0l-9-5.15a2 2 0 0 1-1-1.73v-5.85a2 2 0 0 1 1-1.73l9-5.15a2 2 0 0 1 2 0z"/></svg>
+            </div>
             <div class="repo-info">
                 <div class="repo-name">${repo.name}</div>
                 <div class="repo-stats">
-                    <span>⭐ ${repo.stargazers_count.toLocaleString()}</span>
-                    <span>🍴 ${repo.forks_count.toLocaleString()}</span>
-                    <span>${repo.language || 'N/A'}</span>
+                    <div class="stat-item"><span style="color: #e3b341">⭐</span> ${repo.stargazers_count.toLocaleString()}</div>
+                    <div class="stat-item"><span>🍴</span> ${repo.forks_count.toLocaleString()}</div>
+                    <div class="stat-item"><div class="lang-dot" style="background: ${LANG_COLORS[repo.language] || LANG_COLORS.default}"></div> ${repo.language || 'N/A'}</div>
                 </div>
             </div>
         `;
@@ -194,15 +198,20 @@ function renderFeed(items, filter = 'all') {
     container.innerHTML = '';
     const filtered = filter === 'all' ? items : items.filter(i => i.type === filter);
     if (!filtered.length) {
-        container.innerHTML = '<div style="color: var(--text2); padding: 20px; text-align: center;">No activity</div>';
+        container.innerHTML = '<div style="color: var(--text-muted); padding: 20px; text-align: center;">No activity</div>';
         return;
     }
-    const icons = { commit: '📊', pr: '🔀', issue: '🐛', release: '🚀' };
+    const icons = { 
+        commit: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><line x1="3" y1="12" x2="8" y2="12"/><line x1="16" y1="12" x2="21" y2="12"/><line x1="12" y1="3" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="21"/></svg>', 
+        pr: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><line x1="6" y1="9" x2="6" y2="21"/></svg>', 
+        issue: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>', 
+        release: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4.5c1.62-1.62 5-2.5 5-2.5"/><path d="M12 15v5s3.03-.55 4.5-2c1.62-1.62 2.5-5 2.5-5"/></svg>' 
+    };
     filtered.forEach(item => {
         const el = document.createElement('div');
         el.className = `activity-item ${item.type}`;
         el.innerHTML = `
-            <span class="activity-icon">${icons[item.type] || '📝'}</span>
+            <div class="activity-icon-box">${icons[item.type] || '📝'}</div>
             <div class="activity-content">
                 <div class="activity-title">${item.title}</div>
                 <div class="activity-repo">${item.repo}</div>
@@ -260,6 +269,21 @@ function showSkeleton() {
 function hideSkeleton() {
     document.getElementById('skeleton').classList.add('hidden');
     document.getElementById('dashboard').classList.remove('hidden');
+    
+    // Trigger staggered reveal animation
+    setTimeout(() => {
+        document.querySelectorAll('.metric-tile').forEach((el, i) => {
+            el.style.animation = 'none';
+            el.offsetHeight; // trigger reflow
+            el.style.animation = `reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards ${i * 0.1}s`;
+        });
+        const reveals = document.querySelectorAll('.reveal');
+        reveals.forEach((el, i) => {
+            setTimeout(() => {
+                el.classList.add('active');
+            }, i * 100);
+        });
+    }, 100);
 }
 
 function showError(msg) {

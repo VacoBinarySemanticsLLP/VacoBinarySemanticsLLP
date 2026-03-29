@@ -3,34 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitHub Org Stats Dashboard</title>
+    <title>Vaco Dashboard | GitHub Org Intel</title>
+    <meta name="description" content="High-performance GitHub Organization Stats Dashboard for Vaco Binary Semantics. Monitor commits, PRs, and repository health in real-time.">
+    <meta property="og:title" content="Vaco Dashboard | GitHub Org Intel">
+    <meta property="og:description" content="Real-time GitHub activity monitoring for engineering teams.">
+    <meta property="og:type" content="website">
     <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Background Elements for Glassmorphism -->
+    <div class="bg-blob blob-1"></div>
+    <div class="bg-blob blob-2"></div>
+
     <div class="shell">
         <!-- Loading Skeleton -->
         <div id="skeleton" class="skeleton">
-            <div class="skeleton-topbar"></div>
-            <div class="skeleton-metrics"></div>
-            <div class="skeleton-chart"></div>
+            <div class="skeleton-topbar glass"></div>
+            <div class="skeleton-metrics glass"></div>
+            <div class="skeleton-chart glass"></div>
         </div>
 
         <!-- Error Banner -->
-        <div id="error-banner" class="error-banner hidden">
+        <div id="error-banner" class="error-banner hidden glass">
             <div class="error-content">
-                <span class="error-icon">⚠️</span>
+                <span class="error-icon" aria-hidden="true">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+                </span>
                 <span id="error-message">Failed to load data</span>
-                <button id="retry-btn" class="retry-btn">Retry</button>
+                <button id="retry-btn" class="retry-btn" aria-label="Retry loading data">Retry</button>
             </div>
         </div>
 
         <!-- Main Dashboard -->
         <div id="dashboard" class="dashboard hidden">
             <!-- Top Bar -->
-            <header class="topbar">
+            <header class="topbar glass reveal">
                 <div class="org-info">
                     <div class="org-avatar" id="org-avatar">VBS</div>
                     <div class="org-details">
@@ -39,17 +46,25 @@
                     </div>
                 </div>
                 <div class="topbar-right">
-                    <div id="refresh-countdown" class="refresh-badge">
+                    <button class="cta-primary glass" aria-label="Export intelligence report">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        <span>Export Report</span>
+                    </button>
+                    <div id="refresh-countdown" class="refresh-badge" aria-live="polite">
                         <span class="pulse-dot"></span>
                         <span id="countdown-text">Auto-refresh: 5:00</span>
                     </div>
                     <div class="badges">
-                        <div class="badge" title="Members">
-                            <span class="badge-icon">👥</span>
+                        <div class="badge glass" title="Members">
+                            <span class="badge-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            </span>
                             <span id="badge-members" class="badge-value">-</span>
                         </div>
-                        <div class="badge" title="Repositories">
-                            <span class="badge-icon">📦</span>
+                        <div class="badge glass" title="Repositories">
+                            <span class="badge-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+                            </span>
                             <span id="badge-repos" class="badge-value">-</span>
                         </div>
                     </div>
@@ -58,48 +73,58 @@
 
             <!-- Metric Cards -->
             <section class="metrics-grid">
-                <div class="metric-card">
+                <div class="metric-tile glass reveal">
                     <div class="metric-header">
-                        <span class="metric-icon">📊</span>
+                        <div class="metric-icon-box">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg>
+                        </div>
                         <span class="metric-trend" id="commits-trend">+12%</span>
                     </div>
-                    <div class="metric-value" id="commits-value">0</div>
+                    <div class="metric-value tabular-nums" id="commits-value">0</div>
                     <div class="metric-label">Total Commits</div>
                     <div class="metric-sublabel">Last 4 weeks</div>
                 </div>
-                <div class="metric-card">
+                <div class="metric-tile glass reveal">
                     <div class="metric-header">
-                        <span class="metric-icon">👨‍💻</span>
+                        <div class="metric-icon-box">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        </div>
                         <span class="metric-trend" id="devs-trend">+5%</span>
                     </div>
-                    <div class="metric-value" id="devs-value">0</div>
+                    <div class="metric-value tabular-nums" id="devs-value">0</div>
                     <div class="metric-label">Active Developers</div>
                     <div class="metric-sublabel">Contributing this month</div>
                 </div>
-                <div class="metric-card">
+                <div class="metric-tile glass reveal">
                     <div class="metric-header">
-                        <span class="metric-icon">🔀</span>
+                        <div class="metric-icon-box">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 11V7a5 5 0 0 1 10 0v4"/><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M12 18V14"/></svg>
+                        </div>
                         <span class="metric-trend" id="prs-trend">+8%</span>
                     </div>
-                    <div class="metric-value" id="prs-value">0</div>
+                    <div class="metric-value tabular-nums" id="prs-value">0</div>
                     <div class="metric-label">Open PRs</div>
                     <div class="metric-sublabel">Awaiting review</div>
                 </div>
-                <div class="metric-card">
+                <div class="metric-tile glass reveal">
                     <div class="metric-header">
-                        <span class="metric-icon">⏱️</span>
+                        <div class="metric-icon-box">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        </div>
                         <span class="metric-trend trend-down" id="time-trend">-15%</span>
                     </div>
-                    <div class="metric-value" id="time-value">0.0</div>
+                    <div class="metric-value tabular-nums" id="time-value">0.0</div>
                     <div class="metric-label">Avg Merge Time</div>
                     <div class="metric-sublabel">Hours (lower is better)</div>
                 </div>
             </section>
 
             <!-- Weekly Commit Chart -->
-            <section class="chart-section">
+            <section class="chart-section glass reveal">
                 <h2 class="section-title">Weekly Commits (Last 12 Weeks)</h2>
-                <div id="week-chart" class="week-chart"></div>
+                <div class="chart-container">
+                    <div id="week-chart" class="week-chart"></div>
+                </div>
                 <div class="chart-labels">
                     <span>12 weeks ago</span>
                     <span>This week</span>
@@ -108,18 +133,18 @@
 
             <!-- Two Column Row -->
             <section class="two-col">
-                <div class="panel">
+                <div class="panel glass reveal">
                     <h2 class="panel-title">Top Contributors</h2>
                     <div id="contributors-list" class="contributors-list"></div>
                 </div>
-                <div class="panel">
+                <div class="panel glass reveal">
                     <h2 class="panel-title">Most Active Repos</h2>
                     <div id="repo-list" class="repo-list"></div>
                 </div>
             </section>
 
             <!-- Contribution Heatmap -->
-            <section class="heatmap-section">
+            <section class="heatmap-section glass reveal">
                 <h2 class="section-title">Contribution Activity (Last 26 Weeks)</h2>
                 <div class="heatmap-container">
                     <div id="heatmap" class="heatmap"></div>
@@ -136,34 +161,34 @@
             </section>
 
             <!-- Language Breakdown -->
-            <section class="lang-section">
+            <section class="lang-section glass reveal">
                 <h2 class="section-title">Language Breakdown</h2>
                 <div id="lang-bar" class="lang-bar"></div>
                 <div id="lang-legend" class="lang-legend"></div>
             </section>
 
             <!-- Tabbed Panel -->
-            <section class="tabs-section">
-                <div class="tabs-strip">
-                    <button class="tab active" data-tab="activity">Activity Feed</button>
-                    <button class="tab" data-tab="prs">PR Stats</button>
-                    <button class="tab" data-tab="health">Repo Health</button>
+            <section class="tabs-section glass reveal">
+                <div class="tabs-strip" role="tablist">
+                    <button class="tab active" data-tab="activity" role="tab" aria-selected="true" aria-controls="tab-activity">Activity Feed</button>
+                    <button class="tab" data-tab="prs" role="tab" aria-selected="false" aria-controls="tab-prs">PR Stats</button>
+                    <button class="tab" data-tab="health" role="tab" aria-selected="false" aria-controls="tab-health">Repo Health</button>
                 </div>
 
-                <div id="tab-activity" class="tab-panel active">
+                <div id="tab-activity" class="tab-panel active" role="tabpanel">
                     <div class="filter-chips">
-                        <button class="chip active" data-filter="all">All</button>
-                        <button class="chip" data-filter="commit">Commits</button>
-                        <button class="chip" data-filter="pr">PRs</button>
-                        <button class="chip" data-filter="issue">Issues</button>
-                        <button class="chip" data-filter="release">Releases</button>
+                        <button class="chip active" data-filter="all" aria-label="Filter all activity">All</button>
+                        <button class="chip" data-filter="commit" aria-label="Filter commits">Commits</button>
+                        <button class="chip" data-filter="pr" aria-label="Filter pull requests">PRs</button>
+                        <button class="chip" data-filter="issue" aria-label="Filter issues">Issues</button>
+                        <button class="chip" data-filter="release" aria-label="Filter releases">Releases</button>
                     </div>
-                    <div id="activity-feed" class="activity-feed"></div>
+                    <div id="activity-feed" class="activity-feed" aria-live="polite"></div>
                 </div>
 
                 <div id="tab-prs" class="tab-panel">
                     <div class="pr-stats">
-                        <div class="pr-status-bar">
+                        <div class="pr-status-bar glass">
                             <div class="pr-status pr-merged" id="pr-merged-bar">
                                 <span>Merged</span>
                             </div>
@@ -175,15 +200,15 @@
                             </div>
                         </div>
                         <div class="pr-metrics">
-                            <div class="pr-metric">
+                            <div class="pr-metric glass">
                                 <span class="pr-metric-label">Total PRs</span>
                                 <span class="pr-metric-value" id="pr-total">0</span>
                             </div>
-                            <div class="pr-metric">
+                            <div class="pr-metric glass">
                                 <span class="pr-metric-label">Avg time to merge</span>
                                 <span class="pr-metric-value" id="pr-avg-time">0h</span>
                             </div>
-                            <div class="pr-metric">
+                            <div class="pr-metric glass">
                                 <span class="pr-metric-label">Review comments avg</span>
                                 <span class="pr-metric-value" id="pr-comments">0</span>
                             </div>
@@ -219,8 +244,23 @@
             </section>
         </div>
 
-        <!-- Tooltip -->
-        <div id="tooltip" class="tooltip"></div>
+        </main>
+
+        <footer class="footer-glass glass reveal">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <h3>Vaco Binary Semantics</h3>
+                    <p>Building high-performance intelligence for engineering teams. Our mission is to provide clear, actionable insights into repository health and developer velocity.</p>
+                </div>
+                <div class="footer-security">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    <span>SSL Secure Enterprise Intelligence</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+    <div id="tooltip" class="tooltip hidden"></div>
     </div>
 
     <script src="app.js"></script>
