@@ -1,82 +1,91 @@
 # AGENTS.md
 
 ## Repository Overview
-GitHub organization profile README for **Vaco Binary Semantics LLP**.
-This repo contains the README.md that displays on the organization's GitHub page.
+GitHub Organization Stats Dashboard for Vaco Binary Semantics LLP.
+
+**Stack**: Node.js + Express backend + vanilla JS frontend
 
 ## File Structure
 ```
-├── README.md       # Organization profile README (main file)
-└── AGENTS.md       # This file - instructions for AI agents
+├── .env.example      # Template for environment variables
+├── .gitignore        # Ignores node_modules, .env
+├── package.json      # Dependencies and scripts
+├── server.js         # Express entry point
+├── lib/
+│   └── github.js     # GitHub API client with caching
+├── routes/
+│   └── github.js     # /api/* route handlers
+├── public/
+│   ├── index.html    # Dashboard HTML
+│   ├── style.css     # Dark GitHub theme
+│   └── app.js        # Browser JS (calls /api/* only)
+└── README.md         # Organization profile
 ```
 
-## About the README
-The README.md uses:
-- **Shields.io badges** for stats and technology icons
-- **Tables** for organized information
-- **GitHub markdown** for formatting
-- **Emoji** for visual appeal
+## Security Model
+- `GITHUB_TOKEN` lives ONLY in `.env` (gitignored)
+- `lib/github.js` reads `process.env.GITHUB_TOKEN`
+- Browser JS calls `localhost:3000/api/...` — never touches GitHub directly
+- Token NEVER appears in any file inside `public/`
 
-## How to Update
+## Commands
+```bash
+# Install dependencies
+npm install
 
-### Adding New Repositories
-Update the "Most Active Repositories" section:
-```markdown
-[![Repo Name](https://gh-card-rd.vercel.app/repo/VacoBinarySemanticsLLP/REPO-NAME/?header=)](https://github.com/VacoBinarySemanticsLLP/REPO-NAME)
+# Run in development (auto-reload)
+npm run dev
+
+# Run in production
+npm start
+
+# Server runs at http://localhost:3000
 ```
 
-### Adding New Technology Badges
-Add new badges in the "Technologies We Use" section:
-```markdown
-![TechName](https://img.shields.io/badge/-TechName-COLOR?style=flat-square&logo=logo-name&logoColor=white)
-```
+## API Endpoints (routes/github.js)
+| Endpoint | Returns |
+|----------|---------|
+| GET /api/repos | Top 20 repos sorted by pushed_at |
+| GET /api/contributors | Top 10 contributors aggregated |
+| GET /api/commits | Weekly commit totals (last 12 weeks) |
+| GET /api/pulls | PR stats: open, merged, closed, avg_hours |
+| GET /api/languages | Language percentages (top 6 + Other) |
+| GET /api/members | Member count |
+| GET /api/health | Health metrics (CI, review rate, issues) |
 
-Common logos: https://simpleicons.org
+## Setup Steps
+1. Copy `.env.example` to `.env`
+2. Fill in your `GITHUB_TOKEN` and `ORG_NAME`
+3. Run `npm install`
+4. Run `npm run dev`
+5. Open http://localhost:3000
 
-### Updating Company Info
-- Company details in "Quick Facts" table
-- Specialties in the grid table
-- Locations section
-- Contact information
-
-## Badge Resources
-- **Shields.io**: https://shields.io
-- **Simple Icons**: https://simpleicons.org
-- **GitHub Cards**: https://gh-card-rd.vercel.app
-
-## Style Guidelines
-- Use consistent emoji throughout
-- Keep tables aligned and clean
-- Use shields.io badges for consistency
-- Maintain professional tone
+## Code Style
+- Use `async/await` for all async operations
+- Error handling with try/catch blocks
+- Numbers formatted with `.toLocaleString()`
+- CSS variables for design tokens
+- No secrets in frontend code
 
 ## Common Tasks
 
-### Task 1: Add a new technology
-1. Find the logo at simpleicons.org
-2. Add badge with company brand color
-3. Test rendering on GitHub
+### Add new API endpoint
+1. Add route handler in `routes/github.js`
+2. Export from router
+3. Call from `public/app.js` via `apiFetch('/new-endpoint')`
 
-### Task 2: Update contact info
-1. Edit the Contact Us table
-2. Ensure links are correct
-3. Update social media handles
+### Update dashboard UI
+1. Edit `public/index.html` for structure
+2. Edit `public/style.css` for styling
+3. Edit `public/app.js` for behavior
 
-### Task 3: Add new repository highlight
-1. Replace REPO-NAME-1 with actual repo name
-2. Verify the repo is public
-3. Check card renders correctly
+### Debug API issues
+1. Check server console for `[API CALL]` logs
+2. Verify `.env` has valid `GITHUB_TOKEN`
+3. Test endpoint directly: `curl http://localhost:3000/api/repos`
 
-## Quality Checklist
-Before committing:
-- [ ] All links work correctly
-- [ ] Tables render properly
-- [ ] Badges display correctly
-- [ ] No typos in company info
-- [ ] Contact details are current
-- [ ] Emoji are appropriate and consistent
-
-## Notes
-- README displays on github.com/VacoBinarySemanticsLLP
-- Some badges may take time to cache/update
-- GitHub limits external image domains - use shields.io and similar trusted services
+## Deployment Notes
+- Never commit `.env` file
+- Use PM2 or similar for production
+- Set `NODE_ENV=production`
+- GitHub token needs `repo` and `read:org` scopes
