@@ -437,4 +437,110 @@ router.get('/compliance', async (req, res) => {
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// GET /api/activity
+router.get('/activity', async (req, res) => {
+    try {
+        const repos = await getCachedRepos();
+        const activities = [];
+        const now = new Date();
+
+        // Fetch recent commits from top 5 repos
+        const topRepos = repos.slice(0, 5);
+        await batchFetch(topRepos, () => '/commits?per_page=5', data => {
+            if (!Array.isArray(data)) return;
+            for (const commit of data) {
+                const commitDate = new Date(commit.commit.author.date);
+                const hoursAgo = Math.floor((now - commitDate) / (1000 * 60 * 60));
+                let timeStr;
+                if (hoursAgo < 1) timeStr = 'Just now';
+                else if (hoursAgo < 24) timeStr = `${hoursAgo}h ago`;
+                else timeStr = `${Math.floor(hoursAgo / 24)}d ago`;
+
+                activities.push({
+                    type: 'commit',
+                    title: commit.commit.message.split('\n')[0].substring(0, 60),
+                    repo: commit.html_url?.split('/')[5] || 'unknown',
+                    time: timeStr,
+                    timestamp: commitDate.getTime(),
+                    html_url: commit.html_url
+                });
+            }
+        });
+
+        // Fetch recent PRs from top 5 repos
+        await batchFetch(topRepos, () => '/pulls?state=all&per_page=3', data => {
+            if (!Array.isArray(data)) return;
+            for (const pr of data) {
+                const prDate = new Date(pr.created_at);
+                const hoursAgo = Math.floor((now - prDate) / (1000 * 60 * 60));
+                let timeStr;
+                if (hoursAgo < 1) timeStr = 'Just now';
+                else if (hoursAgo < 24) timeStr = `${hoursAgo}h ago`;
+                else timeStr = `${Math.floor(hoursAgo / 24)}d ago`;
+
+                activities.push({
+                    type: 'pr',
+                    title: pr.title,
+                    repo: pr.html_url?.split('/')[5] || 'unknown',
+                    time: timeStr,
+                    timestamp: prDate.getTime(),
+                    html_url: pr.html_url
+                });
+            }
+        });
+
+        // Fetch recent issues from top 5 repos
+        await batchFetch(topRepos, () => '/issues?state=all&per_page=3', data => {
+            if (!Array.isArray(data)) return;
+            for (const issue of data) {
+                if (issue.pull_request) continue; // Skip PRs
+                const issueDate = new Date(issue.created_at);
+                const hoursAgo = Math.floor((now - issueDate) / (1000 * 60 * 60));
+                let timeStr;
+                if (hoursAgo < 1) timeStr = 'Just now';
+                else if (hoursAgo < 24) timeStr = `${hoursAgo}h ago`;
+                else timeStr = `${Math.floor(hoursAgo / 24)}d ago`;
+
+                activities.push({
+                    type: 'issue',
+                    title: issue.title,
+                    repo: issue.html_url?.split('/')[5] || 'unknown',
+                    time: timeStr,
+                    timestamp: issueDate.getTime(),
+                    html_url: issue.html_url
+                });
+            }
+        });
+
+        // Fetch recent releases from top 5 repos
+        await batchFetch(topRepos, () => '/releases?per_page=2', data => {
+            if (!Array.isArray(data)) return;
+            for (const release of data) {
+                const releaseDate = new Date(release.published_at);
+                const hoursAgo = Math.floor((now - releaseDate) / (1000 * 60 * 60));
+                let timeStr;
+                if (hoursAgo < 1) timeStr = 'Just now';
+                else if (hoursAgo < 24) timeStr = `${hoursAgo}h ago`;
+                else timeStr = `${Math.floor(hoursAgo / 24)}d ago`;
+
+                activities.push({
+                    type: 'release',
+                    title: release.name || release.tag_name,
+                    repo: release.html_url?.split('/')[5] || 'unknown',
+                    time: timeStr,
+                    timestamp: releaseDate.getTime(),
+                    html_url: release.html_url
+                });
+            }
+        });
+
+        // Sort by timestamp descending and take top 20
+        activities.sort((a, b) => b.timestamp - a.timestamp);
+
+        res.json({
+            activities: activities.slice(0, 20)
+        });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 module.exports = router;

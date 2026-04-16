@@ -590,8 +590,9 @@ async function init() {
         renderTopics(topics);
         renderCompliance(compliance);
 
-        // Mock activity feed
-        window.feedItems = generateMockFeed(repos);
+        // Use real activity feed
+        const [activity] = await Promise.all([apiFetch('/activity')]);
+        window.feedItems = activity.activities;
         renderFeed(window.feedItems, 'all');
 
         startCountdown();
@@ -599,26 +600,6 @@ async function init() {
         console.error('Dashboard error:', err);
         showError(err.message);
     }
-}
-
-function generateMockFeed(repos) {
-    const types = ['commit', 'pr', 'issue', 'release'];
-    const times = ['2h ago', '5h ago', 'Yesterday', '2 days ago', '3 days ago'];
-    const titles = {
-        commit: ['Fix: Updated login flow', 'Refactor: Improved performance', 'Docs: Updated README', 'Feat: Added dark mode'],
-        pr: ['Feature: Add export to PDF', 'Bugfix: Fix memory leak', 'Refactor: Update dependencies', 'Chore: Update CI config'],
-        issue: ['Bug: App crashes on iOS', 'Question: How to configure?', 'Feature request: Add dark mode', 'Bug: Slow load time'],
-        release: ['Release v2.1.0', 'Release v2.0.5', 'Release v2.0.4', 'Release v2.0.3']
-    };
-    return Array.from({ length: 15 }, (_, i) => {
-        const type = types[Math.floor(Math.random() * types.length)];
-        return {
-            type,
-            title: titles[type][Math.floor(Math.random() * 4)],
-            repo: repos[Math.floor(Math.random() * Math.min(repos.length, 5))]?.name || 'repo',
-            time: times[Math.floor(Math.random() * times.length)]
-        };
-    });
 }
 
 // === EVENT LISTENERS ===
