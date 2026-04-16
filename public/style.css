@@ -689,7 +689,7 @@ body {
 .pr-open { background: #818cf8; }
 .pr-closed { background: var(--border-charcoal); }
 
-.pr-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.pr-metrics { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
 .pr-metric { 
     text-align: center; 
     background: var(--bg-elevated); 

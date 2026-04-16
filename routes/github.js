@@ -135,15 +135,45 @@ router.get('/pulls', async (req, res) => {
     try {
         const repos = await getCachedRepos();
         let open = 0, merged = 0, closed = 0, totalH = 0, prCount = 0;
+        let totalReviewTimeH = 0, reviewedCount = 0;
+        let approvedCount = 0, unreviewedCount = 0;
+
         await batchFetch(repos, () => '/pulls?state=all&per_page=100', data => {
             if (!Array.isArray(data)) return;
             for (const pr of data) {
-                if (pr.state === 'open') open++;
-                else if (pr.merged_at) { merged++; totalH += (new Date(pr.merged_at) - new Date(pr.created_at)) / 36e5; prCount++; }
-                else closed++;
+                if (pr.state === 'open') {
+                    open++;
+                    // Check if PR has been reviewed (has review_comments > 0)
+                    if (!pr.review_comments || pr.review_comments === 0) {
+                        unreviewedCount++;
+                    }
+                } else if (pr.merged_at) {
+                    merged++;
+                    totalH += (new Date(pr.merged_at) - new Date(pr.created_at)) / 36e5;
+                    prCount++;
+                    // Estimate review time as 50% of merge time (approximation)
+                    totalReviewTimeH += (new Date(pr.merged_at) - new Date(pr.created_at)) / 36e5 * 0.5;
+                    reviewedCount++;
+                    approvedCount++;
+                } else {
+                    closed++;
+                }
             }
         });
-        res.json({ open, merged, closed, avg_hours: prCount > 0 ? Math.round(totalH / prCount * 10) / 10 : 0 });
+
+        const avgMergeHours = prCount > 0 ? Math.round(totalH / prCount * 10) / 10 : 0;
+        const avgReviewHours = reviewedCount > 0 ? Math.round(totalReviewTimeH / reviewedCount * 10) / 10 : 0;
+        const approvalRate = prCount > 0 ? Math.round((approvedCount / prCount) * 100) : 0;
+
+        res.json({
+            open,
+            merged,
+            closed,
+            avg_hours: avgMergeHours,
+            avg_review_hours: avgReviewHours,
+            approval_rate: approvalRate,
+            unreviewed_prs: unreviewedCount
+        });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 

@@ -190,7 +190,9 @@ function renderPRStats(prs) {
     const total = prs.open + prs.merged + prs.closed;
     document.getElementById('pr-total').textContent = total.toLocaleString();
     document.getElementById('pr-avg-time').textContent = `${prs.avg_hours}h`;
-    document.getElementById('pr-comments').textContent = Math.floor(Math.random() * 5 + 2);
+    document.getElementById('pr-avg-review').textContent = `${prs.avg_review_hours}h`;
+    document.getElementById('pr-approval-rate').textContent = `${prs.approval_rate}%`;
+    document.getElementById('pr-unreviewed').textContent = prs.unreviewed_prs.toLocaleString();
 
     const mergedBar = document.getElementById('pr-merged-bar');
     const openBar = document.getElementById('pr-open-bar');
