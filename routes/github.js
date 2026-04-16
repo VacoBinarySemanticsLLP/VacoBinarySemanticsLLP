@@ -26,6 +26,7 @@ async function getCachedRepos() {
 // ─── Per-repo stats cache (5 min TTL) ───
 const statsCache = new Map();
 
+
 function getStatsCache(repo, path) {
     const e = statsCache.get(`${repo.name}::${path}`);
     if (e && (Date.now() - e.time < 5 * 60 * 1000)) return e.data;
@@ -304,57 +305,6 @@ router.get('/releases', async (req, res) => {
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// GET /api/growth
-router.get('/growth', async (req, res) => {
-    try {
-        const repos = await getCachedRepos();
-        // Take top 10 most recently pushed repos
-        const topRepos = repos.slice(0, 10);
-        const repoStats = [];
-        let totalAdditions = 0, totalDeletions = 0, totalCommits = 0;
-
-        await batchFetch(topRepos, () => '/stats/contributors', data => {
-            if (!Array.isArray(data)) return;
-            // Sum up all contributions across all contributors
-            for (const contributor of data) {
-                if (contributor.weeks) {
-                    for (const week of contributor.weeks) {
-                        totalAdditions += week.a || 0;
-                        totalDeletions += week.d || 0;
-                        totalCommits += week.c || 0;
-                    }
-                }
-            }
-        });
-
-        // Calculate activity scores based on recent activity
-        for (const repo of topRepos) {
-            const daysSincePush = Math.floor((Date.now() - new Date(repo.pushed_at).getTime()) / (1000 * 60 * 60 * 24));
-            const activityScore = Math.max(0, 100 - daysSincePush * 2); // Decay over time
-            repoStats.push({
-                name: repo.name,
-                stargazers_count: repo.stargazers_count,
-                forks_count: repo.forks_count,
-                language: repo.language,
-                days_since_push: daysSincePush,
-                activity_score: activityScore,
-                html_url: repo.html_url
-            });
-        }
-
-        // Sort by activity score descending
-        repoStats.sort((a, b) => b.activity_score - a.activity_score);
-
-        res.json({
-            total_additions: totalAdditions,
-            total_deletions: totalDeletions,
-            total_commits: totalCommits,
-            net_lines: totalAdditions - totalDeletions,
-            active_repos: repoStats.filter(r => r.days_since_push <= 30).length,
-            top_active_repos: repoStats.slice(0, 5)
-        });
-    } catch (e) { res.status(500).json({ error: e.message }); }
-});
 
 // GET /api/topics
 router.get('/topics', async (req, res) => {

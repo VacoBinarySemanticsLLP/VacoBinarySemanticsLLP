@@ -9,7 +9,7 @@ services:
       - default
       - caddy_network
     labels:
-      caddy: dashboard.cognitrus.ai
+      caddy: git-stats.teamsphere.in
       caddy.reverse_proxy: "{{upstreams 9007}}"
 
 networks:

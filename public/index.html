@@ -160,8 +160,8 @@
             <section class="heatmap-section glass reveal">
                 <h2 class="section-title">Contribution Activity (Last 26 Weeks)</h2>
                 <div class="heatmap-container">
-                    <div id="heatmap" class="heatmap"></div>
-                    <div class="heatmap-legend">
+                    <div id="heatmap" class="heatmap" role="grid" aria-label="Contribution activity heatmap"></div>
+                    <div class="heatmap-legend" aria-hidden="true">
                         <span class="legend-label">Less</span>
                         <div class="heatmap-cell hm-0"></div>
                         <div class="heatmap-cell hm-1"></div>
@@ -236,53 +236,6 @@
                 <div class="panel glass reveal">
                     <h2 class="panel-title">Top Starred Repos</h2>
                     <div id="top-starred-list" class="top-starred-list"></div>
-                </div>
-            </section>
-
-            <!-- Repository Growth & Activity -->
-            <section class="growth-section glass reveal">
-                <h2 class="section-title">Repository Activity & Growth</h2>
-                <div class="growth-stats-grid">
-                    <div class="growth-stat-card glass">
-                        <div class="growth-stat-icon additions">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        </div>
-                        <div class="growth-stat-content">
-                            <span class="growth-stat-value" id="growth-additions">0</span>
-                            <span class="growth-stat-label">Lines Added</span>
-                        </div>
-                    </div>
-                    <div class="growth-stat-card glass">
-                        <div class="growth-stat-icon deletions">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        </div>
-                        <div class="growth-stat-content">
-                            <span class="growth-stat-value" id="growth-deletions">0</span>
-                            <span class="growth-stat-label">Lines Removed</span>
-                        </div>
-                    </div>
-                    <div class="growth-stat-card glass">
-                        <div class="growth-stat-icon net">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
-                        </div>
-                        <div class="growth-stat-content">
-                            <span class="growth-stat-value" id="growth-net">0</span>
-                            <span class="growth-stat-label">Net Lines</span>
-                        </div>
-                    </div>
-                    <div class="growth-stat-card glass">
-                        <div class="growth-stat-icon active-repos">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                        </div>
-                        <div class="growth-stat-content">
-                            <span class="growth-stat-value" id="growth-active-repos">0</span>
-                            <span class="growth-stat-label">Active Repos</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="top-active-repos">
-                    <h3 class="top-active-title">Most Active Repositories</h3>
-                    <div id="top-active-list" class="top-active-list"></div>
                 </div>
             </section>
 

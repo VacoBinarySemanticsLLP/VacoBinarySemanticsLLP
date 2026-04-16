@@ -150,9 +150,14 @@ function renderHeatmap() {
             const intensity = Math.floor(Math.random() * 5);
             const cell = document.createElement('div');
             cell.className = `heatmap-cell hm-${intensity}`;
+            cell.setAttribute('role', 'gridcell');
+            cell.setAttribute('tabindex', '0');
+            cell.setAttribute('aria-label', `${dateStr}: ${intensity * 4} contributions`);
             cell.addEventListener('mouseenter', e => showTooltip(e, `${dateStr}\n${intensity * 4} contributions`));
             cell.addEventListener('mousemove', updateTooltip);
             cell.addEventListener('mouseleave', hideTooltip);
+            cell.addEventListener('focus', e => showTooltip(e, `${dateStr}\n${intensity * 4} contributions`));
+            cell.addEventListener('blur', hideTooltip);
             container.appendChild(cell);
         }
     }
@@ -435,36 +440,6 @@ function renderTopStarred(repos) {
     });
 }
 
-function renderGrowthStats(growth) {
-    animateCount(document.getElementById('growth-additions'), growth.total_additions);
-    animateCount(document.getElementById('growth-deletions'), growth.total_deletions);
-    animateCount(document.getElementById('growth-net'), growth.net_lines);
-    animateCount(document.getElementById('growth-active-repos'), growth.active_repos);
-
-    const container = document.getElementById('top-active-list');
-    container.innerHTML = '';
-
-    if (growth.top_active_repos && growth.top_active_repos.length > 0) {
-        growth.top_active_repos.forEach((repo, i) => {
-            const item = document.createElement('div');
-            item.className = 'active-repo-item';
-            item.innerHTML = `
-                <div class="active-repo-rank">#${i + 1}</div>
-                <div class="active-repo-info">
-                    <div class="active-repo-name">${repo.name}</div>
-                    <div class="active-repo-meta">
-                        <span class="active-repo-score">Activity: ${repo.activity_score}%</span>
-                        <span class="active-repo-days">${repo.days_since_push}d ago</span>
-                    </div>
-                </div>
-            `;
-            item.addEventListener('click', () => window.open(repo.html_url, '_blank'));
-            container.appendChild(item);
-        });
-    } else {
-        container.innerHTML = '<div style="color: var(--text-muted); padding: 10px; text-align: center;">No data</div>';
-    }
-}
 
 function renderTopics(topics) {
     document.getElementById('topics-total').textContent = topics.total_topics;
@@ -548,7 +523,7 @@ function formatTimeAgo(dateString) {
 async function init() {
     showSkeleton();
     try {
-        const [repos, members, weeks, contributors, prs, langs, health, issues, releases, growth, topics, compliance] = await Promise.all([
+        const [repos, members, weeks, contributors, prs, langs, health, issues, releases, topics, compliance] = await Promise.all([
             apiFetch('/repos'),
             apiFetch('/members'),
             apiFetch('/commits'),
@@ -558,7 +533,6 @@ async function init() {
             apiFetch('/health'),
             apiFetch('/issues'),
             apiFetch('/releases'),
-            apiFetch('/growth'),
             apiFetch('/topics'),
             apiFetch('/compliance')
         ]);
@@ -586,7 +560,6 @@ async function init() {
         renderIssueStats(issues);
         renderReleases(releases);
         renderTopStarred(repos);
-        renderGrowthStats(growth);
         renderTopics(topics);
         renderCompliance(compliance);
 

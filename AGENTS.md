@@ -89,3 +89,14 @@ npm start
 - Use PM2 or similar for production
 - Set `NODE_ENV=production`
 - GitHub token needs `repo` and `read:org` scopes
+
+## Design System
+
+Always read `DESIGN.md` before making any visual or UI decisions.
+All font choices, colors, spacing, and aesthetic direction are defined there.
+Do not deviate without explicit user approval.
+
+**Quick reference:**
+- **Palette:** `#0B0F19` deep navy + `#22D3EE` cyan primary + `#6366F1` indigo secondary
+- **Fonts:** Geist (UI), Geist Mono + JetBrains Mono (data/code)
+- **Motion:** Minimal — hover `translateY(-2px)` + brightness, staggered load reveals

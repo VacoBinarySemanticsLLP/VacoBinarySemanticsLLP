@@ -513,23 +513,34 @@ body {
     margin-bottom: 20px;
 }
 
-.heatmap-container { display: flex; flex-direction: column; gap: 10px; }
+.heatmap-container { display: flex; flex-direction: column; gap: 12px; }
 
 .heatmap {
     display: grid; 
     grid-template-columns: repeat(26, 1fr); 
     grid-template-rows: repeat(7, 1fr);
-    gap: 3px; 
+    gap: 4px; 
+    align-items: center;
+    justify-items: center;
 }
 
 .heatmap-cell {
-    border-radius: 2px; 
+    width: 12px;
+    height: 12px;
+    border-radius: 3px; 
     cursor: pointer; 
-    transition: transform 0.15s, opacity 0.15s;
+    transition: transform 0.15s ease, opacity 0.15s ease, border-color 0.2s ease;
+    border: 1px solid transparent;
 }
 .heatmap-cell:hover { 
-    transform: scale(1.3); 
-    opacity: 0.85;
+    transform: translateY(-1px); 
+    opacity: 0.9;
+    border-color: var(--border-prominent);
+}
+.heatmap-cell:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-shadow);
+    border-color: var(--green-border);
 }
 .hm-0 { background: var(--bg-elevated); border: 1px solid var(--border-subtle); }
 .hm-1 { background: rgba(62, 207, 142, 0.25); }
@@ -537,9 +548,9 @@ body {
 .hm-3 { background: rgba(62, 207, 142, 0.65); }
 .hm-4 { background: var(--green-brand); }
 
-.heatmap-legend { display: flex; align-items: center; gap: 4px; justify-content: flex-end; }
-.legend-label { font-size: 10px; color: var(--text-muted); margin: 0 3px; }
-.heatmap-legend .heatmap-cell { width: 10px; height: 10px; }
+.heatmap-legend { display: flex; align-items: center; gap: 6px; justify-content: flex-end; }
+.legend-label { font-size: 10px; color: var(--text-muted); margin: 0 4px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.5px; }
+.heatmap-legend .heatmap-cell { width: 10px; height: 10px; border-radius: 2px; }
 
 /* === LANGUAGE BREAKDOWN === */
 .lang-section {
@@ -997,123 +1008,6 @@ body {
     color: var(--text-muted);
 }
 
-/* === GROWTH & ACTIVITY SECTION === */
-.growth-section {
-    padding: 24px;
-    border-radius: var(--radius-xl);
-}
-.growth-stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin-bottom: 20px;
-}
-.growth-stat-card {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 16px;
-    border-radius: var(--radius-md);
-    background: var(--bg-elevated);
-    border: 1px solid var(--border-subtle);
-}
-.growth-stat-icon {
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: var(--radius-md);
-    flex-shrink: 0;
-}
-.growth-stat-icon.additions { background: rgba(62, 207, 142, 0.15); color: #3ecf8e; }
-.growth-stat-icon.deletions { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
-.growth-stat-icon.net { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
-.growth-stat-icon.active-repos { background: rgba(168, 85, 247, 0.15); color: #a855f7; }
-.growth-stat-content {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-.growth-stat-value {
-    font-size: 24px;
-    font-weight: 600;
-    color: var(--text-primary);
-    font-family: var(--font-mono);
-}
-.growth-stat-label {
-    font-size: 12px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-.top-active-repos {
-    margin-top: 8px;
-}
-.top-active-title {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-secondary);
-    margin-bottom: 12px;
-}
-.top-active-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-.active-repo-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 12px;
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    transition: background 0.2s;
-}
-.active-repo-item:hover {
-    background: var(--bg-elevated);
-}
-.active-repo-rank {
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg-elevated);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-md);
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-muted);
-    font-family: var(--font-mono);
-    flex-shrink: 0;
-}
-.active-repo-info {
-    flex: 1;
-    min-width: 0;
-}
-.active-repo-name {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-primary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-.active-repo-meta {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-top: 2px;
-    font-size: 11px;
-}
-.active-repo-score {
-    color: var(--green-brand);
-}
-.active-repo-days {
-    color: var(--text-muted);
-}
-
 /* === TOPICS SECTION === */
 .topics-section {
     padding: 24px;
@@ -1296,6 +1190,8 @@ body {
 /* === RESPONSIVE === */
 @media (max-width: 900px) {
     .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+    .issue-stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .pr-metrics { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 768px) {
     .shell { padding: 16px; }
@@ -1308,8 +1204,25 @@ body {
     .two-col { grid-template-columns: 1fr; }
     .pr-metrics { grid-template-columns: 1fr; }
     .footer-content { flex-direction: column; gap: 20px; }
+    .issue-stats-grid { grid-template-columns: 1fr; }
+    .compliance-grid { grid-template-columns: 1fr; }
+    .health-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .health-label { width: auto; }
+    .health-value { width: auto; text-align: left; }
+    .tabs-strip { flex-wrap: wrap; }
+    .tab { flex: 1 1 120px; }
 }
 @media (max-width: 480px) {
     .metrics-grid { grid-template-columns: 1fr; }
     .badges { flex-wrap: wrap; }
+    .topbar-right { flex-direction: column; align-items: stretch; }
+    .cta-primary,
+    .refresh-badge { width: 100%; justify-content: center; }
+    .badges { justify-content: flex-start; }
+}
+
+@media (max-width: 600px) {
+    .heatmap-container { overflow-x: auto; }
+    .heatmap { min-width: 420px; }
+    .heatmap-legend { justify-content: flex-start; }
 }
