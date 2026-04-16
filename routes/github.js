@@ -384,4 +384,57 @@ router.get('/topics', async (req, res) => {
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// GET /api/compliance
+router.get('/compliance', async (req, res) => {
+    try {
+        const repos = await getCachedRepos();
+        const licenseMap = new Map();
+        let publicCount = 0, privateCount = 0, archivedCount = 0;
+        let totalRepos = repos.length;
+        const repoVisibility = [];
+        const licenseDistribution = [];
+
+        for (const repo of repos) {
+            // Count visibility
+            if (repo.private) privateCount++;
+            else publicCount++;
+            
+            if (repo.archived) archivedCount++;
+
+            // Count licenses
+            const license = repo.license?.name || 'No License';
+            licenseMap.set(license, (licenseMap.get(license) || 0) + 1);
+
+            repoVisibility.push({
+                name: repo.name,
+                private: repo.private,
+                archived: repo.archived,
+                html_url: repo.html_url
+            });
+        }
+
+        // Sort licenses by count
+        const sortedLicenses = Array.from(licenseMap.entries())
+            .sort((a, b) => b[1] - a[1])
+            .map(([name, count]) => ({
+                name,
+                count,
+                percentage: Math.round((count / totalRepos) * 100)
+            }));
+
+        res.json({
+            total_repos: totalRepos,
+            public_count: publicCount,
+            private_count: privateCount,
+            archived_count: archivedCount,
+            licenses: sortedLicenses.slice(0, 5),
+            visibility_breakdown: {
+                public: publicCount,
+                private: privateCount,
+                archived: archivedCount
+            }
+        });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 module.exports = router;

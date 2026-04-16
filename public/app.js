@@ -491,6 +491,47 @@ function renderTopics(topics) {
     }
 }
 
+function renderCompliance(compliance) {
+    const total = compliance.total_repos;
+    
+    // Update visibility bars
+    const publicBar = document.getElementById('visibility-public-bar');
+    const privateBar = document.getElementById('visibility-private-bar');
+    const archivedBar = document.getElementById('visibility-archived-bar');
+    
+    publicBar.style.width = `${(compliance.public_count / total) * 100}%`;
+    privateBar.style.width = `${(compliance.private_count / total) * 100}%`;
+    archivedBar.style.width = `${(compliance.archived_count / total) * 100}%`;
+    
+    document.getElementById('visibility-public').textContent = compliance.public_count;
+    document.getElementById('visibility-private').textContent = compliance.private_count;
+    document.getElementById('visibility-archived').textContent = compliance.archived_count;
+    
+    // Update license list
+    const container = document.getElementById('license-list');
+    container.innerHTML = '';
+    
+    if (compliance.licenses && compliance.licenses.length > 0) {
+        compliance.licenses.forEach(license => {
+            const item = document.createElement('div');
+            item.className = 'license-item';
+            item.innerHTML = `
+                <div class="license-info">
+                    <span class="license-name">${license.name}</span>
+                    <span class="license-count">${license.count} repos</span>
+                </div>
+                <div class="license-bar-container">
+                    <div class="license-bar" style="width: ${license.percentage}%"></div>
+                </div>
+                <span class="license-percentage">${license.percentage}%</span>
+            `;
+            container.appendChild(item);
+        });
+    } else {
+        container.innerHTML = '<div style="color: var(--text-muted); padding: 10px; text-align: center;">No license data</div>';
+    }
+}
+
 function formatTimeAgo(dateString) {
     const date = new Date(dateString);
     const now = new Date();
@@ -507,7 +548,7 @@ function formatTimeAgo(dateString) {
 async function init() {
     showSkeleton();
     try {
-        const [repos, members, weeks, contributors, prs, langs, health, issues, releases, growth, topics] = await Promise.all([
+        const [repos, members, weeks, contributors, prs, langs, health, issues, releases, growth, topics, compliance] = await Promise.all([
             apiFetch('/repos'),
             apiFetch('/members'),
             apiFetch('/commits'),
@@ -518,7 +559,8 @@ async function init() {
             apiFetch('/issues'),
             apiFetch('/releases'),
             apiFetch('/growth'),
-            apiFetch('/topics')
+            apiFetch('/topics'),
+            apiFetch('/compliance')
         ]);
 
         hideSkeleton();
@@ -546,6 +588,7 @@ async function init() {
         renderTopStarred(repos);
         renderGrowthStats(growth);
         renderTopics(topics);
+        renderCompliance(compliance);
 
         // Mock activity feed
         window.feedItems = generateMockFeed(repos);
