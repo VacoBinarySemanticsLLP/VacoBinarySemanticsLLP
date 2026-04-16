@@ -435,6 +435,62 @@ function renderTopStarred(repos) {
     });
 }
 
+function renderGrowthStats(growth) {
+    animateCount(document.getElementById('growth-additions'), growth.total_additions);
+    animateCount(document.getElementById('growth-deletions'), growth.total_deletions);
+    animateCount(document.getElementById('growth-net'), growth.net_lines);
+    animateCount(document.getElementById('growth-active-repos'), growth.active_repos);
+
+    const container = document.getElementById('top-active-list');
+    container.innerHTML = '';
+
+    if (growth.top_active_repos && growth.top_active_repos.length > 0) {
+        growth.top_active_repos.forEach((repo, i) => {
+            const item = document.createElement('div');
+            item.className = 'active-repo-item';
+            item.innerHTML = `
+                <div class="active-repo-rank">#${i + 1}</div>
+                <div class="active-repo-info">
+                    <div class="active-repo-name">${repo.name}</div>
+                    <div class="active-repo-meta">
+                        <span class="active-repo-score">Activity: ${repo.activity_score}%</span>
+                        <span class="active-repo-days">${repo.days_since_push}d ago</span>
+                    </div>
+                </div>
+            `;
+            item.addEventListener('click', () => window.open(repo.html_url, '_blank'));
+            container.appendChild(item);
+        });
+    } else {
+        container.innerHTML = '<div style="color: var(--text-muted); padding: 10px; text-align: center;">No data</div>';
+    }
+}
+
+function renderTopics(topics) {
+    document.getElementById('topics-total').textContent = topics.total_topics;
+
+    const container = document.getElementById('topics-cloud');
+    container.innerHTML = '';
+
+    if (topics.topics && topics.topics.length > 0) {
+        topics.topics.forEach(topic => {
+            const item = document.createElement('div');
+            item.className = 'topic-tag';
+            // Scale font size based on count (min 12px, max 24px)
+            const maxCount = topics.topics[0].count;
+            const fontSize = Math.min(24, Math.max(12, (topic.count / maxCount) * 24));
+            item.style.fontSize = `${fontSize}px`;
+            item.innerHTML = `
+                <span class="topic-name">${topic.name}</span>
+                <span class="topic-count">${topic.count}</span>
+            `;
+            container.appendChild(item);
+        });
+    } else {
+        container.innerHTML = '<div style="color: var(--text-muted); padding: 20px; text-align: center;">No topics found</div>';
+    }
+}
+
 function formatTimeAgo(dateString) {
     const date = new Date(dateString);
     const now = new Date();
@@ -451,7 +507,7 @@ function formatTimeAgo(dateString) {
 async function init() {
     showSkeleton();
     try {
-        const [repos, members, weeks, contributors, prs, langs, health, issues, releases] = await Promise.all([
+        const [repos, members, weeks, contributors, prs, langs, health, issues, releases, growth, topics] = await Promise.all([
             apiFetch('/repos'),
             apiFetch('/members'),
             apiFetch('/commits'),
@@ -460,7 +516,9 @@ async function init() {
             apiFetch('/languages'),
             apiFetch('/health'),
             apiFetch('/issues'),
-            apiFetch('/releases')
+            apiFetch('/releases'),
+            apiFetch('/growth'),
+            apiFetch('/topics')
         ]);
 
         hideSkeleton();
@@ -486,6 +544,8 @@ async function init() {
         renderIssueStats(issues);
         renderReleases(releases);
         renderTopStarred(repos);
+        renderGrowthStats(growth);
+        renderTopics(topics);
 
         // Mock activity feed
         window.feedItems = generateMockFeed(repos);

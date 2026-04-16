@@ -997,6 +997,191 @@ body {
     color: var(--text-muted);
 }
 
+/* === GROWTH & ACTIVITY SECTION === */
+.growth-section {
+    padding: 24px;
+    border-radius: var(--radius-xl);
+}
+.growth-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+}
+.growth-stat-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-radius: var(--radius-md);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+}
+.growth-stat-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    flex-shrink: 0;
+}
+.growth-stat-icon.additions { background: rgba(62, 207, 142, 0.15); color: #3ecf8e; }
+.growth-stat-icon.deletions { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+.growth-stat-icon.net { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+.growth-stat-icon.active-repos { background: rgba(168, 85, 247, 0.15); color: #a855f7; }
+.growth-stat-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.growth-stat-value {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+}
+.growth-stat-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.top-active-repos {
+    margin-top: 8px;
+}
+.top-active-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+}
+.top-active-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.active-repo-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.active-repo-item:hover {
+    background: var(--bg-elevated);
+}
+.active-repo-rank {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    flex-shrink: 0;
+}
+.active-repo-info {
+    flex: 1;
+    min-width: 0;
+}
+.active-repo-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.active-repo-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 2px;
+    font-size: 11px;
+}
+.active-repo-score {
+    color: var(--green-brand);
+}
+.active-repo-days {
+    color: var(--text-muted);
+}
+
+/* === TOPICS SECTION === */
+.topics-section {
+    padding: 24px;
+    border-radius: var(--radius-xl);
+}
+.topics-stats {
+    margin-bottom: 16px;
+}
+.topics-stat {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 20px;
+    border-radius: var(--radius-md);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+}
+.topics-stat-value {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+}
+.topics-stat-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.topics-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+.topic-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-pill);
+    color: var(--text-secondary);
+    cursor: default;
+    transition: all 0.2s;
+}
+.topic-tag:hover {
+    background: var(--green-brand);
+    color: var(--bg-deepest);
+    border-color: var(--green-brand);
+}
+.topic-name {
+    font-weight: 500;
+}
+.topic-count {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2px 6px;
+    border-radius: var(--radius-pill);
+    font-size: 10px;
+    font-weight: 600;
+}
+.topic-tag:hover .topic-count {
+    background: rgba(0, 0, 0, 0.1);
+}
+
 /* === RESPONSIVE === */
 @media (max-width: 900px) {
     .metrics-grid { grid-template-columns: repeat(2, 1fr); }
