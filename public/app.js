@@ -335,18 +335,130 @@ function startCountdown() {
     }, 1000);
 }
 
+// === NEW RENDERERS ===
+function renderIssueStats(issues) {
+    animateCount(document.getElementById('issues-open'), issues.open);
+    animateCount(document.getElementById('issues-closed'), issues.closed);
+    animateCount(document.getElementById('issues-stale'), issues.stale_count);
+    document.getElementById('issues-avg-days').textContent = issues.avg_resolution_days;
+
+    const labelsContainer = document.getElementById('issue-labels');
+    labelsContainer.innerHTML = '';
+
+    if (issues.by_label && issues.by_label.length > 0) {
+        issues.by_label.forEach(label => {
+            const labelEl = document.createElement('div');
+            labelEl.className = 'issue-label-item';
+            labelEl.innerHTML = `
+                <span class="issue-label-name">${label.name}</span>
+                <span class="issue-label-count">${label.count}</span>
+            `;
+            labelsContainer.appendChild(labelEl);
+        });
+    } else {
+        labelsContainer.innerHTML = '<div style="color: var(--text-muted); padding: 10px; text-align: center;">No labels found</div>';
+    }
+}
+
+function renderReleases(releases) {
+    const container = document.getElementById('releases-list');
+    container.innerHTML = '';
+
+    // Show release stats at top
+    const statsEl = document.createElement('div');
+    statsEl.className = 'release-stats';
+    statsEl.innerHTML = `
+        <div class="release-stat">
+            <span class="release-stat-value">${releases.total_releases}</span>
+            <span class="release-stat-label">Total Releases</span>
+        </div>
+        <div class="release-stat">
+            <span class="release-stat-value">${releases.last_30_days}</span>
+            <span class="release-stat-label">Last 30 Days</span>
+        </div>
+        <div class="release-stat">
+            <span class="release-stat-value">${releases.avg_releases_per_month}</span>
+            <span class="release-stat-label">Avg/Month</span>
+        </div>
+    `;
+    container.appendChild(statsEl);
+
+    // Show recent releases
+    if (releases.recent && releases.recent.length > 0) {
+        releases.recent.forEach(release => {
+            const item = document.createElement('div');
+            item.className = 'release-item';
+            item.innerHTML = `
+                <div class="release-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/></svg>
+                </div>
+                <div class="release-info">
+                    <div class="release-name">${release.name}</div>
+                    <div class="release-meta">
+                        <span class="release-tag">${release.tag_name}</span>
+                        <span class="release-time">${formatTimeAgo(release.published_at)}</span>
+                    </div>
+                </div>
+            `;
+            item.addEventListener('click', () => window.open(release.html_url, '_blank'));
+            container.appendChild(item);
+        });
+    } else {
+        container.innerHTML = '<div style="color: var(--text-muted); padding: 20px; text-align: center;">No recent releases</div>';
+    }
+}
+
+function renderTopStarred(repos) {
+    const container = document.getElementById('top-starred-list');
+    container.innerHTML = '';
+
+    // Sort by stargazers_count descending, take top 5
+    const sorted = [...repos].sort((a, b) => b.stargazers_count - a.stargazers_count).slice(0, 5);
+
+    sorted.forEach((repo, i) => {
+        const item = document.createElement('div');
+        item.className = 'starred-item';
+        item.innerHTML = `
+            <div class="starred-rank">#${i + 1}</div>
+            <div class="starred-info">
+                <div class="starred-name">${repo.name}</div>
+                <div class="starred-stats">
+                    <span class="starred-stars">⭐ ${repo.stargazers_count.toLocaleString()}</span>
+                    <span class="starred-forks">🍴 ${repo.forks_count.toLocaleString()}</span>
+                </div>
+            </div>
+        `;
+        item.addEventListener('click', () => window.open(repo.html_url, '_blank'));
+        container.appendChild(item);
+    });
+}
+
+function formatTimeAgo(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now - date) / 1000);
+
+    if (seconds < 60) return 'Just now';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+    if (seconds < 2592000) return `${Math.floor(seconds / 86400)}d ago`;
+    return `${Math.floor(seconds / 2592000)}mo ago`;
+}
+
 // === INIT ===
 async function init() {
     showSkeleton();
     try {
-        const [repos, members, weeks, contributors, prs, langs, health] = await Promise.all([
+        const [repos, members, weeks, contributors, prs, langs, health, issues, releases] = await Promise.all([
             apiFetch('/repos'),
             apiFetch('/members'),
             apiFetch('/commits'),
             apiFetch('/contributors'),
             apiFetch('/pulls'),
             apiFetch('/languages'),
-            apiFetch('/health')
+            apiFetch('/health'),
+            apiFetch('/issues'),
+            apiFetch('/releases')
         ]);
 
         hideSkeleton();
@@ -359,7 +471,7 @@ async function init() {
         renderMetrics({
             commits: weeks.reduce((s, w) => s + w.total, 0),
             devs: contributors.length,
-            prs: prs.prs || prs.open || 0,
+            prs: prs.open || 0,
             mergeTime: (prs.avg_hours && !isNaN(prs.avg_hours)) ? prs.avg_hours.toFixed(1) : "0.0"
         });
         renderWeekChart(weeks);
@@ -369,6 +481,9 @@ async function init() {
         renderLanguages(langs);
         renderPRStats(prs);
         renderHealth(health);
+        renderIssueStats(issues);
+        renderReleases(releases);
+        renderTopStarred(repos);
 
         // Mock activity feed
         window.feedItems = generateMockFeed(repos);

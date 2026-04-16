@@ -8,13 +8,10 @@
     <meta property="og:title" content="Vaco Dashboard | GitHub Org Intel">
     <meta property="og:description" content="Real-time GitHub activity monitoring for engineering teams.">
     <meta property="og:type" content="website">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%233ecf8e' rx='20' width='100' height='100'/><text x='50%' y='55%' dominant-baseline='middle' text-anchor='middle' font-size='60' font-family='system-ui' fill='%230f0f0f'>V</text></svg>">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Background Elements for Glassmorphism -->
-    <div class="bg-blob blob-1"></div>
-    <div class="bg-blob blob-2"></div>
-
     <!-- Loading Overlay -->
     <div id="loader" class="loader-overlay">
         <div class="spinner"></div>
@@ -181,6 +178,65 @@
                 <h2 class="section-title">Language Breakdown</h2>
                 <div id="lang-bar" class="lang-bar"></div>
                 <div id="lang-legend" class="lang-legend"></div>
+            </section>
+
+            <!-- Issue Analytics Section -->
+            <section class="issue-analytics glass reveal">
+                <h2 class="section-title">Issue Analytics</h2>
+                <div class="issue-stats-grid">
+                    <div class="issue-stat-card glass">
+                        <div class="issue-stat-icon open">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        </div>
+                        <div class="issue-stat-content">
+                            <span class="issue-stat-value" id="issues-open">0</span>
+                            <span class="issue-stat-label">Open Issues</span>
+                        </div>
+                    </div>
+                    <div class="issue-stat-card glass">
+                        <div class="issue-stat-icon closed">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                        </div>
+                        <div class="issue-stat-content">
+                            <span class="issue-stat-value" id="issues-closed">0</span>
+                            <span class="issue-stat-label">Closed Issues</span>
+                        </div>
+                    </div>
+                    <div class="issue-stat-card glass">
+                        <div class="issue-stat-icon time">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        </div>
+                        <div class="issue-stat-content">
+                            <span class="issue-stat-value" id="issues-avg-days">0</span>
+                            <span class="issue-stat-label">Avg Resolution Days</span>
+                        </div>
+                    </div>
+                    <div class="issue-stat-card glass">
+                        <div class="issue-stat-icon stale">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        </div>
+                        <div class="issue-stat-content">
+                            <span class="issue-stat-value" id="issues-stale">0</span>
+                            <span class="issue-stat-label">Stale Issues</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="issue-labels-container">
+                    <h3 class="issue-labels-title">Top Labels</h3>
+                    <div id="issue-labels" class="issue-labels-list"></div>
+                </div>
+            </section>
+
+            <!-- Two Column Row: Releases & Top Starred -->
+            <section class="two-col">
+                <div class="panel glass reveal">
+                    <h2 class="panel-title">Recent Releases</h2>
+                    <div id="releases-list" class="releases-list"></div>
+                </div>
+                <div class="panel glass reveal">
+                    <h2 class="panel-title">Top Starred Repos</h2>
+                    <div id="top-starred-list" class="top-starred-list"></div>
+                </div>
             </section>
 
             <!-- Tabbed Panel -->
