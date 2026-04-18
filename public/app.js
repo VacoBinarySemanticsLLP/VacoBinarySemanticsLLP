@@ -34,12 +34,16 @@ function renderMetrics(data) {
 }
 
 function renderWeekChart(weeks) {
-    const container = document.getElementById('week-chart');
+    const svg = document.getElementById('week-chart');
     const yAxis = document.getElementById('y-axis');
-    container.innerHTML = '';
+    const width = 680;
+    const height = 200;
+    const padding = { top: 20, right: 20, bottom: 30, left: 40 };
+    const chartWidth = width - padding.left - padding.right;
+    const chartHeight = height - padding.top - padding.bottom;
     
     const max = Math.max(...weeks.map(w => w.total), 1);
-    const roundedMax = Math.ceil(max / 100) * 100; // Round up to nearest 100
+    const roundedMax = Math.ceil(max / 100) * 100;
     
     // Update Y-axis labels
     yAxis.innerHTML = `
@@ -50,26 +54,98 @@ function renderWeekChart(weeks) {
         <span>0</span>
     `;
 
-    weeks.forEach((week, i) => {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'week-bar-wrapper';
+    // Clear previous content
+    svg.innerHTML = '';
+
+    // Create gradient definition
+    const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    const gradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+    gradient.setAttribute('id', 'lineGradient');
+    gradient.setAttribute('x1', '0%');
+    gradient.setAttribute('y1', '0%');
+    gradient.setAttribute('x2', '0%');
+    gradient.setAttribute('y2', '100%');
+    
+    const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+    stop1.setAttribute('offset', '0%');
+    stop1.setAttribute('stop-color', '#3ecf8e');
+    stop1.setAttribute('stop-opacity', '0.25');
+    
+    const stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+    stop2.setAttribute('offset', '100%');
+    stop2.setAttribute('stop-color', '#3ecf8e');
+    stop2.setAttribute('stop-opacity', '0.02');
+    
+    gradient.appendChild(stop1);
+    gradient.appendChild(stop2);
+    defs.appendChild(gradient);
+    svg.appendChild(defs);
+
+    // Calculate points
+    const xStep = chartWidth / (weeks.length - 1);
+    const points = weeks.map((week, i) => ({
+        x: padding.left + i * xStep,
+        y: padding.top + chartHeight - (week.total / max) * chartHeight,
+        value: week.total,
+        week: i + 1
+    }));
+
+    // Draw horizontal grid lines
+    for (let i = 0; i <= 4; i++) {
+        const y = padding.top + (chartHeight / 4) * i;
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('class', 'chart-grid-line');
+        line.setAttribute('x1', padding.left);
+        line.setAttribute('y1', y);
+        line.setAttribute('x2', width - padding.right);
+        line.setAttribute('y2', y);
+        svg.appendChild(line);
+    }
+
+    // Create area path
+    let areaPath = `M ${points[0].x} ${padding.top + chartHeight}`;
+    points.forEach(p => areaPath += ` L ${p.x} ${p.y}`);
+    areaPath += ` L ${points[points.length - 1].x} ${padding.top + chartHeight} Z`;
+    
+    const area = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    area.setAttribute('class', 'chart-area');
+    area.setAttribute('d', areaPath);
+    svg.appendChild(area);
+
+    // Create line path
+    let linePath = `M ${points[0].x} ${points[0].y}`;
+    points.slice(1).forEach(p => linePath += ` L ${p.x} ${p.y}`);
+    
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    line.setAttribute('class', 'chart-line');
+    line.setAttribute('d', linePath);
+    svg.appendChild(line);
+
+    // Draw data points
+    points.forEach((p, i) => {
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('class', 'chart-point');
+        circle.setAttribute('cx', p.x);
+        circle.setAttribute('cy', p.y);
+        circle.setAttribute('r', '6');
+        circle.setAttribute('data-tooltip', `Week ${p.week}: ${p.value.toLocaleString()} commits`);
+        circle.setAttribute('tabindex', '0');
+        circle.setAttribute('role', 'listitem');
+        circle.setAttribute('aria-label', `Week ${p.week}: ${p.value.toLocaleString()} commits`);
         
-        const bar = document.createElement('div');
-        bar.className = 'week-bar';
-        bar.style.height = `${(week.total / max) * 100}%`;
-        bar.setAttribute('data-value', week.total.toLocaleString());
-        bar.setAttribute('role', 'listitem');
-        bar.setAttribute('tabindex', '0');
-        bar.setAttribute('aria-label', `Week ${i + 1}: ${week.total.toLocaleString()} commits`);
+        circle.addEventListener('mouseenter', e => {
+            showTooltip(e, `Week ${p.week}: ${p.value.toLocaleString()} commits`);
+        });
+        circle.addEventListener('mousemove', e => {
+            updateTooltip(e);
+        });
+        circle.addEventListener('mouseleave', hideTooltip);
+        circle.addEventListener('focus', e => {
+            showTooltip(e, `Week ${p.week}: ${p.value.toLocaleString()} commits`);
+        });
+        circle.addEventListener('blur', hideTooltip);
         
-        bar.addEventListener('mouseenter', e => showTooltip(e, `Week ${i + 1}: ${week.total.toLocaleString()} commits`));
-        bar.addEventListener('mousemove', updateTooltip);
-        bar.addEventListener('mouseleave', hideTooltip);
-        bar.addEventListener('focus', e => showTooltip(e, `Week ${i + 1}: ${week.total.toLocaleString()} commits`));
-        bar.addEventListener('blur', hideTooltip);
-        
-        wrapper.appendChild(bar);
-        container.appendChild(wrapper);
+        svg.appendChild(circle);
     });
 }
 
@@ -269,21 +345,30 @@ function showTooltip(e, text) {
     const tooltip = document.getElementById('tooltip');
     tooltip.textContent = text;
     tooltip.classList.add('visible');
-    updateTooltip(e);
+    tooltip.style.opacity = '1';
+    tooltip.style.visibility = 'visible';
+    
+    const x = e.clientX + 15;
+    const y = e.clientY + 15;
+    tooltip.style.left = x + 'px';
+    tooltip.style.top = y + 'px';
 }
 
 function updateTooltip(e) {
     const tooltip = document.getElementById('tooltip');
-    let x = e.clientX + 12, y = e.clientY + 12;
-    const rect = tooltip.getBoundingClientRect();
-    if (x + rect.width > window.innerWidth) x = e.clientX - rect.width - 12;
-    if (y + rect.height > window.innerHeight) y = e.clientY - rect.height - 12;
-    tooltip.style.left = `${x}px`;
-    tooltip.style.top = `${y}px`;
+    if (!tooltip.classList.contains('visible')) return;
+    
+    const x = e.clientX + 15;
+    const y = e.clientY + 15;
+    tooltip.style.left = x + 'px';
+    tooltip.style.top = y + 'px';
 }
 
 function hideTooltip() {
-    document.getElementById('tooltip').classList.remove('visible');
+    const tooltip = document.getElementById('tooltip');
+    tooltip.classList.remove('visible');
+    tooltip.style.opacity = '0';
+    tooltip.style.visibility = 'hidden';
 }
 
 function switchTab(name) {
